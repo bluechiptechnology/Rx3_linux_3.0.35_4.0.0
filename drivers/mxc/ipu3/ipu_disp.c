@@ -1255,6 +1255,8 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp, uint32_t pixel_clk,
 	/* Init clocking */
 	dev_dbg(ipu->dev, "pixel clk = %d\n", pixel_clk);
 
+	printk("Dave Pixel Closk: %d\n", pixel_clk);
+
 	di_parent = clk_get_parent(ipu->di_clk[disp]);
 	if (clk_get(NULL, "tve_clk") == di_parent ||
 		clk_get(NULL, "ldb_di0_clk") == di_parent ||

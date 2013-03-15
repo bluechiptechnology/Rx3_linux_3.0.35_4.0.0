@@ -58,6 +58,34 @@ static struct map_desc mx6_io_desc[] __initdata = {
 	.type = MT_DEVICE},
 };
 
+extern unsigned int system_rev;
+
+static void set_system_rev(u32 digprog)
+{
+	u32 cpu_type = digprog >> 16;
+	u32 board_rev = 0;
+	u32 cpu_rev = 0;
+
+	switch (digprog & 0xFF)
+	{
+	case 1:
+		cpu_rev = 0x11;	/* 1.1. silicon */
+		break;
+
+	case 2:
+		cpu_rev = 0x12;	/* 1.2 silicon */
+		break;
+
+	default:
+		cpu_rev = 0;
+		pr_err("Unknown i.MX6 silicon rev 0x%02x - ignored\n", digprog &0xFF);
+		break;
+	}
+
+	system_rev = (cpu_type << 12) | board_rev | cpu_rev;
+	pr_warn("Setting system_rev 0x%x from digprog 0x%x\n", system_rev, digprog);
+}
+
 static void mx6_set_cpu_type(void)
 {
 	u32 cpu_type = readl(IO_ADDRESS(ANATOP_BASE_ADDR + 0x280));
@@ -70,6 +98,9 @@ static void mx6_set_cpu_type(void)
 	}
 
 	cpu_type = readl(IO_ADDRESS(ANATOP_BASE_ADDR + 0x260));
+
+	set_system_rev(cpu_type);
+
 	cpu_type >>= 16;
 	if (cpu_type == 0x63) {
 		mxc_set_cpu_type(MXC_CPU_MX6Q);

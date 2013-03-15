@@ -32,6 +32,9 @@ modules.builtin
 *.lzo
 *.patch
 *.gcno
+*.orig
+*~
+\#*#
 
 #
 # Top-level generic files
@@ -61,6 +64,7 @@ arch/*/include/generated
 
 # stgit generated dirs
 patches-*
+.stgit-edit.txt
 
 # quilt's files
 patches
@@ -76,6 +80,7 @@ GRTAGS
 GSYMS
 GTAGS
 
-*.orig
-*~
-\#*#
+
+# KDevelop files
+*.kdev4
+/.kdev*

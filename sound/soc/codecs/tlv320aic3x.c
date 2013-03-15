@@ -52,12 +52,10 @@
 
 #include "tlv320aic3x.h"
 
-#define AIC3X_NUM_SUPPLIES	4
+#define AIC3X_NUM_SUPPLIES	0
 static const char *aic3x_supply_names[AIC3X_NUM_SUPPLIES] = {
-	"IOVDD",	/* I/O Voltage */
-	"DVDD",		/* Digital Core Voltage */
-	"AVDD",		/* Analog DAC Voltage */
-	"DRVDD",	/* ADC Analog and Output Driver Voltage */
+//	"VDDIO",	/* I/O Voltage */
+//	"VDDA",		/* Analog DAC Voltage */
 };
 
 static LIST_HEAD(reset_list);
@@ -1392,6 +1390,7 @@ static int aic3x_probe(struct snd_soc_codec *codec)
 			goto err_gpio;
 		gpio_direction_output(aic3x->gpio_reset, 0);
 	}
+
 
 	for (i = 0; i < ARRAY_SIZE(aic3x->supplies); i++)
 		aic3x->supplies[i].supply = aic3x_supply_names[i];

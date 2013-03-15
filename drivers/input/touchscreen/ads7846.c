@@ -1320,7 +1320,7 @@ static int __devinit ads7846_probe(struct spi_device *spi)
 	}
 
 	irq_flags = pdata->irq_flags ? : IRQF_TRIGGER_FALLING;
-	irq_flags |= IRQF_ONESHOT;
+	//irq_flags |= IRQF_ONESHOT;
 
 	err = request_threaded_irq(spi->irq, ads7846_hard_irq, ads7846_irq,
 				   irq_flags, spi->dev.driver->name, ts);
