@@ -1177,34 +1177,38 @@ static void __init mx6_bctrm3_board_init(void)
 	gpio_direction_output(MX6Q_BCTRM3_EN_PANEL, 1);
 	gpio_export(MX6Q_BCTRM3_EN_PANEL, 0);
 
-	//request GPIO's
+	//request GPIO's - default to 4 in + 4 out, but can be altered by user
 	gpio_request(MX6Q_BCTRM3_GPIO1, "RM3_GPIO1");
 	gpio_direction_output(MX6Q_BCTRM3_GPIO1, 1);
-	gpio_export(MX6Q_BCTRM3_GPIO1, 0);
+	gpio_export(MX6Q_BCTRM3_GPIO1, 1);
 
 	gpio_request(MX6Q_BCTRM3_GPIO2, "RM3_GPIO2");
 	gpio_direction_output(MX6Q_BCTRM3_GPIO2, 1);
-	gpio_export(MX6Q_BCTRM3_GPIO2, 0);
+	gpio_export(MX6Q_BCTRM3_GPIO2, 1);
 
 	gpio_request(MX6Q_BCTRM3_GPIO3, "RM3_GPIO3");
 	gpio_direction_output(MX6Q_BCTRM3_GPIO3, 1);
-	gpio_export(MX6Q_BCTRM3_GPIO3, 0);
+	gpio_export(MX6Q_BCTRM3_GPIO3, 1);
 
 	gpio_request(MX6Q_BCTRM3_GPIO4, "RM3_GPIO4");
 	gpio_direction_output(MX6Q_BCTRM3_GPIO4, 1);
-	gpio_export(MX6Q_BCTRM3_GPIO4, 0);
+	gpio_export(MX6Q_BCTRM3_GPIO4, 1);
 
 	gpio_request(MX6Q_BCTRM3_GPIO5, "RM3_GPIO5");
-	gpio_export(MX6Q_BCTRM3_GPIO5, 0);
+	gpio_direction_input(MX6Q_BCTRM3_GPIO5);
+	gpio_export(MX6Q_BCTRM3_GPIO5, 1);
 
 	gpio_request(MX6Q_BCTRM3_GPIO6, "RM3_GPIO6");
-	gpio_export(MX6Q_BCTRM3_GPIO6, 0);
+	gpio_direction_input(MX6Q_BCTRM3_GPIO6);
+	gpio_export(MX6Q_BCTRM3_GPIO6, 1);
 
 	gpio_request(MX6Q_BCTRM3_GPIO7, "RM3_GPIO7");
-	gpio_export(MX6Q_BCTRM3_GPIO7, 0);
+	gpio_direction_input(MX6Q_BCTRM3_GPIO7);
+	gpio_export(MX6Q_BCTRM3_GPIO7, 1);
 
 	gpio_request(MX6Q_BCTRM3_GPIO8, "RM3_GPIO8");
-	gpio_export(MX6Q_BCTRM3_GPIO8, 0);
+	gpio_direction_input(MX6Q_BCTRM3_GPIO8);
+	gpio_export(MX6Q_BCTRM3_GPIO8, 1);
 
 	imx6q_add_imx_i2c(0, &mx6q_bctrm3_i2c_data);
 	imx6q_add_imx_i2c(1, &mx6q_bctrm3_i2c_data);
