@@ -107,6 +107,7 @@
 #define MX6Q_BCTRM3_GPIO7			IMX_GPIO_NR(1, 30)
 #define MX6Q_BCTRM3_GPIO8			IMX_GPIO_NR(1, 29)
 
+#define MX6Q_BCTRM3_PER_RST			IMX_GPIO_NR(2, 8)
 
 #define MX6Q_BCTRM3_SD3_WP_PADCFG	(PAD_CTL_PKE | PAD_CTL_PUE |	\
 		PAD_CTL_PUS_22K_UP | PAD_CTL_SPEED_MED |	\
@@ -1209,6 +1210,11 @@ static void __init mx6_bctrm3_board_init(void)
 	gpio_request(MX6Q_BCTRM3_GPIO8, "RM3_GPIO8");
 	gpio_direction_input(MX6Q_BCTRM3_GPIO8);
 	gpio_export(MX6Q_BCTRM3_GPIO8, 1);
+
+	gpio_request(MX6Q_BCTRM3_PER_RST, "PER_RST");
+	gpio_direction_output(MX6Q_BCTRM3_PER_RST, 1);
+	msleep(20);
+	gpio_set_value(MX6Q_BCTRM3_PER_RST, 0);
 
 	imx6q_add_imx_i2c(0, &mx6q_bctrm3_i2c_data);
 	imx6q_add_imx_i2c(1, &mx6q_bctrm3_i2c_data);
