@@ -78,7 +78,6 @@
 
 #define MX6Q_BCTRM3_SD1_CD		IMX_GPIO_NR(1, 1)
 #define MX6Q_BCTRM3_SD1_WP		IMX_GPIO_NR(1, 9)
-#define MX6Q_BCTRM3_SD3_CD		IMX_GPIO_NR(1, 2)
 
 #define MX6Q_BCTRM3_ECSPI1_CS1	IMX_GPIO_NR(1, 13)
 #define MX6Q_BCTRM3_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
@@ -288,7 +287,7 @@ static iomux_v3_cfg_t mx6q_bctrm3_pads[] = {
 	MX6Q_PAD_SD3_DAT1__USDHC3_DAT1_50MHZ,
 	MX6Q_PAD_SD3_DAT2__USDHC3_DAT2_50MHZ,
 	MX6Q_PAD_SD3_DAT3__USDHC3_DAT3_50MHZ,
-	MX6Q_PAD_GPIO_2__GPIO_1_2,		/* SD3_CD */
+	MX6Q_PAD_GPIO_2__GPIO_1_2,		/* WIRELESS_PWR_EN */
 
 	MX6Q_PAD_EIM_EB0__GPIO_2_28, //touch
 	MX6Q_PAD_SD2_CMD__ECSPI5_MOSI,
@@ -417,7 +416,7 @@ static int plt_sd1_pad_change(unsigned int index, int clock)
 }
 
 static const struct esdhc_platform_data mx6q_bctrm3_sd3_data __initconst = {
-	.cd_gpio = MX6Q_BCTRM3_SD3_CD,
+	.cd_gpio = -1,
 	.wp_gpio = -1,
 	.keep_power_at_suspend = 1,
 	.platform_pad_change = plt_sd3_pad_change,
