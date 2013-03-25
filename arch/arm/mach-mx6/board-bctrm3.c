@@ -44,6 +44,7 @@
 #include <linux/mxcfb.h>
 #include <linux/pwm_backlight.h>
 #include <linux/fec.h>
+#include <linux/smsc911x.h>
 #include <linux/memblock.h>
 #include <linux/gpio.h>
 #include <linux/etherdevice.h>
@@ -93,7 +94,6 @@
 #define MX6Q_BCTRM3_CSI0_RST		IMX_GPIO_NR(1, 8)
 #define MX6Q_BCTRM3_CSI0_PWN		IMX_GPIO_NR(1, 6)
 
-#define MX6Q_BCTRM3_TCH_INT1		IMX_GPIO_NR(2, 28)
 #define MX6Q_BCTRM3_EN_LITE			IMX_GPIO_NR(1, 3)
 #define MX6Q_BCTRM3_EN_PANEL		IMX_GPIO_NR(4, 20)
 
@@ -108,6 +108,16 @@
 
 #define MX6Q_BCTRM3_PER_RST			IMX_GPIO_NR(2, 8)
 
+#define MX6Q_BCTRM3_SOM_IRQA_GPIO	IMX_GPIO_NR(6, 31)
+#define MX6Q_BCTRM3_SOM_IRQB_GPIO	IMX_GPIO_NR(2, 28)
+#define MX6Q_BCTRM3_SOM_IRQC_GPIO	IMX_GPIO_NR(2, 29)
+
+#define MX6Q_BCTRM3_TCH_INT1		MX6Q_BCTRM3_SOM_IRQB_GPIO
+
+#define MX6Q_BCTRM3_EXPN_CE0		0	// EIM_CS0
+#define MX6Q_BCTRM3_EXPN_CE1		1	// EIM_CS1
+#define MX6Q_BCTRM3_EXPN_CE4		2	// EIM_CS2
+
 #define MX6Q_BCTRM3_SD3_WP_PADCFG	(PAD_CTL_PKE | PAD_CTL_PUE |	\
 		PAD_CTL_PUS_22K_UP | PAD_CTL_SPEED_MED |	\
 		PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
@@ -119,6 +129,134 @@ extern char *gp_reg_id;
 
 extern struct regulator *(*get_cpu_regulator)(void);
 extern void (*put_cpu_regulator)(void);
+
+#define EIM_CSxGCR1 0x00	// Offset beyond EIM base register
+#define EIM_CSxRCR1 0x08	// Offset beyond EIM base register
+#define EIM_CSxWCR1 0x10	// Offset beyond EIM base register
+
+#define CCM_CCGR6   0x80	// Offset beyond CCM base register
+#define IOMC_GPR1   0x04	// Offset beyond IOMUXC base register
+
+///
+/// Sets up the EIM to have 4 chip selects, each with 32MB of address space
+///
+static void __init bctrm3_setup_eim(void)
+{
+	unsigned int value;
+	void __iomem *ccm_base_reg = MX6_IO_ADDRESS(CCM_BASE_ADDR);
+	void __iomem *iomux_base_reg = MX6_IO_ADDRESS(MX6Q_IOMUXC_BASE_ADDR);
+
+	// Switch on EIM clocks
+	value = readl(ccm_base_reg + CCM_CCGR6);
+	value |= 	(3 << MXC_CCM_CCGRx_CG5_OFFSET);
+	writel(value, ccm_base_reg + CCM_CCGR6);
+
+	// Setup address spaces for CS0, CS1, CS2, CS3 (32MB each)
+	value = readl(iomux_base_reg + IOMC_GPR1);
+	value &= 0xfffff000;
+	value |= 0x00000249;
+	writel(value, iomux_base_reg + IOMC_GPR1);
+}
+
+#if defined(CONFIG_SMSC911X) || defined(CONFIG_SMSC911X_MODULE)
+
+#define SMSC911X_INTR_GPIO      MX6Q_BCTRM3_SOM_IRQC_GPIO
+#define CS_SIZE                 0x2000000                 // 32MB
+
+static struct resource smsc911x_resources[] = {
+	[0] = {
+		.name		= "smsc911x-memory",
+		.start		= CS0_BASE_ADDR + (MX6Q_BCTRM3_EXPN_CE4 * CS_SIZE),
+		.end		= CS0_BASE_ADDR + (MX6Q_BCTRM3_EXPN_CE4 * CS_SIZE) + 0xffff,
+		.flags		= IORESOURCE_MEM,
+	},
+	[1] = {
+		.name		= "smsc911x-irq",
+		.start		= -1,				// Filled in by bctrm3_init_smsc911x()
+		.end		= -1,				// unused
+		.flags		= IORESOURCE_IRQ,
+	},
+};
+
+static struct smsc911x_platform_config smsc911x_config = {
+	.irq_polarity	= SMSC911X_IRQ_POLARITY_ACTIVE_LOW,
+	.irq_type		= SMSC911X_IRQ_TYPE_OPEN_DRAIN,
+	.flags			= SMSC911X_USE_32BIT,
+	.phy_interface	= PHY_INTERFACE_MODE_MII,
+};
+
+static struct platform_device smsc911x_device = {
+	.name			= "smsc911x",
+	.id				= 0,
+	.num_resources	= ARRAY_SIZE(smsc911x_resources),
+	.resource		= smsc911x_resources,
+	.dev = {
+		.platform_data = &smsc911x_config,
+	},
+};
+
+///
+/// Sets up the specified CS with suitable timings for smsc911x chip
+///
+/// @param cs The chip select to be used (0-3)
+///
+static void __init bctrm3_setup_eimcs_for_smsc911x(int cs)
+{
+	unsigned int value;
+	void __iomem *eim_base_reg = MX6_IO_ADDRESS(WEIM_BASE_ADDR);
+
+	// Adjust address based on CS number (0-3)
+	eim_base_reg += 0x18 * (cs);
+
+	// Set up CS (16-bit async, non-multiplexed)
+	value = (4 << 20) 	// CSREC
+	      | (2 << 16)	// DSZ
+	      | (1 << 7)	// CREP
+	      | (1 << 0)	// CSEN
+	      ;
+	printk(KERN_DEBUG "CSxCGR1 = 0x%08x\n", value);
+	__raw_writel(value, eim_base_reg + EIM_CSxGCR1);
+
+	value = ( 7 << 24)	// RWSC
+	      | ( 1 << 16)	// RADVN
+	      | ( 1 << 12)	// OEA
+	      | ( 0 <<  8)	// OEN
+	      ;
+	printk(KERN_DEBUG "CSxRCR1 = 0x%08x\n", value);
+	__raw_writel(value, eim_base_reg + EIM_CSxRCR1);
+
+	value = ( 7 << 24)	// WWSC
+	      | ( 1 << 18)	// WADVN
+	      | ( 1 <<  9)	// WEA
+	      | ( 0 <<  6)	// WEN
+	      ;
+	printk(KERN_DEBUG "CSxWCR1 = 0x%08x\n", value);
+	__raw_writel(value, eim_base_reg + EIM_CSxWCR1);
+}
+
+static inline void __init bctrm3_init_smsc911x(void)
+{
+	// Set up EIM chip select
+	bctrm3_setup_eim();
+	bctrm3_setup_eimcs_for_smsc911x(MX6Q_BCTRM3_EXPN_CE4);
+
+	// Set up interrupt pin
+	if (gpio_request(SMSC911X_INTR_GPIO, "smsc911x irq") < 0)
+	{
+		printk(KERN_ERR "Failed to request GPIO%d for smsc911x IRQ\n", SMSC911X_INTR_GPIO);
+		return;
+	}
+
+	gpio_direction_input(SMSC911X_INTR_GPIO);
+	smsc911x_resources[1].start = gpio_to_irq(SMSC911X_INTR_GPIO);
+	smsc911x_resources[1].flags |=	(IORESOURCE_IRQ_LOWLEVEL & IRQF_TRIGGER_MASK);
+
+	// Register the platform device
+	platform_device_register(&smsc911x_device);
+}
+#else
+static inline void __init bctrm3_init_smsc911x(void) { return; }
+#endif
 
 static iomux_v3_cfg_t mx6q_bctrm3_pads[] = {
 
@@ -1189,6 +1327,8 @@ static void __init mx6_bctrm3_board_init(void)
 	gpio_direction_output(MX6Q_BCTRM3_PER_RST, 1);
 	msleep(20);
 	gpio_set_value(MX6Q_BCTRM3_PER_RST, 0);
+
+	bctrm3_init_smsc911x();
 
 	imx6q_add_imx_i2c(0, &mx6q_bctrm3_i2c_data);
 	imx6q_add_imx_i2c(1, &mx6q_bctrm3_i2c_data);
