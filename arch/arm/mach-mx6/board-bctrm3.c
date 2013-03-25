@@ -77,46 +77,50 @@
 #include "crm_regs.h"
 #include "cpu_op-mx6.h"
 
-#define MX6Q_BCTRM3_SD1_CD		IMX_GPIO_NR(1, 1)
-#define MX6Q_BCTRM3_SD1_WP		IMX_GPIO_NR(1, 9)
+//
+// GPIO definitions
+//
+#define MX6Q_BCTRM3_SD1_CD          IMX_GPIO_NR(1, 1)
+#define MX6Q_BCTRM3_SD1_WP          IMX_GPIO_NR(1, 9)
+#define MX6Q_BCTRM3_ECSPI1_CS1      IMX_GPIO_NR(1, 13)
 
-#define MX6Q_BCTRM3_ECSPI1_CS1	IMX_GPIO_NR(1, 13)
-#define MX6Q_BCTRM3_USB_OTG_PWR	IMX_GPIO_NR(3, 22)
-#define MX6Q_BCTRM3_USB_HUB_RESET	IMX_GPIO_NR(7, 12)
-#define MX6Q_BCTRM3_CAN1_STBY	IMX_GPIO_NR(1, 2)
-#define MX6Q_BCTRM3_CAN1_EN		IMX_GPIO_NR(1, 4)
-#define MX6Q_BCTRM3_MENU_KEY		IMX_GPIO_NR(2, 1)
-#define MX6Q_BCTRM3_BACK_KEY		IMX_GPIO_NR(2, 2)
-#define MX6Q_BCTRM3_ONOFF_KEY	IMX_GPIO_NR(2, 3)
-#define MX6Q_BCTRM3_HOME_KEY		IMX_GPIO_NR(2, 4)
-#define MX6Q_BCTRM3_VOL_UP_KEY	IMX_GPIO_NR(7, 13)
-#define MX6Q_BCTRM3_VOL_DOWN_KEY	IMX_GPIO_NR(4, 5)
-#define MX6Q_BCTRM3_CSI0_RST		IMX_GPIO_NR(1, 8)
-#define MX6Q_BCTRM3_CSI0_PWN		IMX_GPIO_NR(1, 6)
+#define MX6Q_BCTRM3_CAN1_EN         IMX_GPIO_NR(2, 11)
+#define MX6Q_BCTRM3_LED_CNTRL       IMX_GPIO_NR(7, 13)
+#define MX6Q_BCTRM3_CSI0_RST        IMX_GPIO_NR(6, 15)
 
-#define MX6Q_BCTRM3_EN_LITE			IMX_GPIO_NR(1, 3)
-#define MX6Q_BCTRM3_EN_PANEL		IMX_GPIO_NR(4, 20)
+#define MX6Q_BCTRM3_EN_LITE         IMX_GPIO_NR(1, 3)
+#define MX6Q_BCTRM3_EN_PANEL        IMX_GPIO_NR(4, 20)
 
-#define MX6Q_BCTRM3_GPIO1			IMX_GPIO_NR(1, 4)
-#define MX6Q_BCTRM3_GPIO2			IMX_GPIO_NR(4, 10)
-#define MX6Q_BCTRM3_GPIO3			IMX_GPIO_NR(1, 25)
-#define MX6Q_BCTRM3_GPIO4			IMX_GPIO_NR(1, 28)
-#define MX6Q_BCTRM3_GPIO5			IMX_GPIO_NR(1, 27)
-#define MX6Q_BCTRM3_GPIO6			IMX_GPIO_NR(1, 26)
-#define MX6Q_BCTRM3_GPIO7			IMX_GPIO_NR(1, 30)
-#define MX6Q_BCTRM3_GPIO8			IMX_GPIO_NR(1, 29)
+#define MX6Q_BCTRM3_GPIO1           IMX_GPIO_NR(1, 4)
+#define MX6Q_BCTRM3_GPIO2           IMX_GPIO_NR(4, 10)
+#define MX6Q_BCTRM3_GPIO3           IMX_GPIO_NR(1, 25)
+#define MX6Q_BCTRM3_GPIO4           IMX_GPIO_NR(1, 28)
+#define MX6Q_BCTRM3_GPIO5           IMX_GPIO_NR(1, 27)
+#define MX6Q_BCTRM3_GPIO6           IMX_GPIO_NR(1, 26)
+#define MX6Q_BCTRM3_GPIO7           IMX_GPIO_NR(1, 30)
+#define MX6Q_BCTRM3_GPIO8           IMX_GPIO_NR(1, 29)
+#define MX6Q_BCTRM3_GPIO9           IMX_GPIO_NR(2, 12)
+#define MX6Q_BCTRM3_GPIO10          IMX_GPIO_NR(1, 6)
 
-#define MX6Q_BCTRM3_PER_RST			IMX_GPIO_NR(2, 8)
+#define MX6Q_BCTRM3_PER_RST         IMX_GPIO_NR(2, 8)
 
-#define MX6Q_BCTRM3_SOM_IRQA_GPIO	IMX_GPIO_NR(6, 31)
-#define MX6Q_BCTRM3_SOM_IRQB_GPIO	IMX_GPIO_NR(2, 28)
-#define MX6Q_BCTRM3_SOM_IRQC_GPIO	IMX_GPIO_NR(2, 29)
+#define MX6Q_BCTRM3_SOM_IRQA_GPIO   IMX_GPIO_NR(6, 31)
+#define MX6Q_BCTRM3_SOM_IRQB_GPIO   IMX_GPIO_NR(2, 28)
+#define MX6Q_BCTRM3_SOM_IRQC_GPIO   IMX_GPIO_NR(2, 29)
 
-#define MX6Q_BCTRM3_TCH_INT1		MX6Q_BCTRM3_SOM_IRQB_GPIO
+//
+// GPIO mappings
+//
+#define MX6Q_BCTRM3_TCH_INT1        MX6Q_BCTRM3_SOM_IRQB_GPIO
+#define MX6Q_BCTRM3_USB_OTG_PWR     MX6Q_BCTRM3_GPIO10
 
-#define MX6Q_BCTRM3_EXPN_CE0		0	// EIM_CS0
-#define MX6Q_BCTRM3_EXPN_CE1		1	// EIM_CS1
-#define MX6Q_BCTRM3_EXPN_CE4		2	// EIM_CS2
+//
+// EIM Chip Selects
+//
+#define MX6Q_BCTRM3_EXPN_CE0        0   // EIM_CS0
+#define MX6Q_BCTRM3_EXPN_CE         1   // EIM_CS1
+#define MX6Q_BCTRM3_EXPN_CE4        2   // EIM_CS2
+
 
 #define MX6Q_BCTRM3_SD3_WP_PADCFG	(PAD_CTL_PKE | PAD_CTL_PUE |	\
 		PAD_CTL_PUS_22K_UP | PAD_CTL_SPEED_MED |	\
@@ -485,9 +489,6 @@ mx6q_sd##id##_##speed##mhz[] = {		\
 static iomux_v3_cfg_t MX6Q_USDHC_PAD_SETTING(3, 50);
 static iomux_v3_cfg_t MX6Q_USDHC_PAD_SETTING(3, 100);
 static iomux_v3_cfg_t MX6Q_USDHC_PAD_SETTING(3, 200);
-//static iomux_v3_cfg_t MX6Q_USDHC_PAD_SETTING(1, 50);
-//static iomux_v3_cfg_t MX6Q_USDHC_PAD_SETTING(1, 100);
-//static iomux_v3_cfg_t MX6Q_USDHC_PAD_SETTING(1, 200);
 
 enum sd_pad_mode {
 	SD_PAD_MODE_LOW_SPEED,
@@ -744,12 +745,6 @@ static void mx6q_csi0_io_init(void)
 	mxc_iomux_v3_setup_multiple_pads(mx6q_bctrm3_csi0_sensor_pads,
 			ARRAY_SIZE(mx6q_bctrm3_csi0_sensor_pads));
 
-	/* Camera power down */
-	gpio_request(MX6Q_BCTRM3_CSI0_PWN, "cam-pwdn");
-	gpio_direction_output(MX6Q_BCTRM3_CSI0_PWN, 1);
-	msleep(1);
-	gpio_set_value(MX6Q_BCTRM3_CSI0_PWN, 0);
-
 	/* Camera reset */
 	gpio_request(MX6Q_BCTRM3_CSI0_RST, "cam-reset");
 	gpio_direction_output(MX6Q_BCTRM3_CSI0_RST, 1);
@@ -899,17 +894,14 @@ static struct ahci_platform_data mx6q_bctrm3_sata_data = {
 
 static struct gpio mx6q_bctrm3_flexcan_gpios[] = {
 	{ MX6Q_BCTRM3_CAN1_EN, GPIOF_OUT_INIT_LOW, "flexcan1-en" },
-	{ MX6Q_BCTRM3_CAN1_STBY, GPIOF_OUT_INIT_LOW, "flexcan1-stby" },
 };
 
 static void mx6q_bctrm3_flexcan0_switch(int enable)
 {
 	if (enable) {
 		gpio_set_value(MX6Q_BCTRM3_CAN1_EN, 1);
-		gpio_set_value(MX6Q_BCTRM3_CAN1_STBY, 1);
 	} else {
 		gpio_set_value(MX6Q_BCTRM3_CAN1_EN, 0);
-		gpio_set_value(MX6Q_BCTRM3_CAN1_STBY, 0);
 	}
 }
 
@@ -1021,48 +1013,6 @@ static const struct pm_platform_data mx6q_bctrm3_pm_data __initconst = {
 	.suspend_enter = bctrm3_suspend_enter,
 	.suspend_exit = bctrm3_suspend_exit,
 };
-
-#if defined(CONFIG_KEYBOARD_GPIO) || defined(CONFIG_KEYBOARD_GPIO_MODULE)
-#define GPIO_BUTTON(gpio_num, ev_code, act_low, descr, wake)	\
-{								\
-	.gpio		= gpio_num,				\
-	.type		= EV_KEY,				\
-	.code		= ev_code,				\
-	.active_low	= act_low,				\
-	.desc		= "btn " descr,				\
-	.wakeup		= wake,					\
-}
-
-static struct gpio_keys_button bctrm3_buttons[] = {
-	GPIO_BUTTON(MX6Q_BCTRM3_ONOFF_KEY, KEY_POWER, 1, "key-power", 1),
-	GPIO_BUTTON(MX6Q_BCTRM3_MENU_KEY, KEY_MENU, 1, "key-memu", 0),
-	GPIO_BUTTON(MX6Q_BCTRM3_HOME_KEY, KEY_HOME, 1, "key-home", 0),
-	GPIO_BUTTON(MX6Q_BCTRM3_BACK_KEY, KEY_BACK, 1, "key-back", 0),
-	GPIO_BUTTON(MX6Q_BCTRM3_VOL_UP_KEY, KEY_VOLUMEUP, 1, "volume-up", 0),
-	GPIO_BUTTON(MX6Q_BCTRM3_VOL_DOWN_KEY, KEY_VOLUMEDOWN, 1, "volume-down", 0),
-};
-
-static struct gpio_keys_platform_data bctrm3_button_data = {
-	.buttons	= bctrm3_buttons,
-	.nbuttons	= ARRAY_SIZE(bctrm3_buttons),
-};
-
-static struct platform_device bctrm3_button_device = {
-	.name		= "gpio-keys",
-	.id		= -1,
-	.num_resources  = 0,
-	.dev		= {
-		.platform_data = &bctrm3_button_data,
-	}
-};
-
-static void __init bctrm3_add_device_buttons(void)
-{
-	platform_device_register(&bctrm3_button_device);
-}
-#else
-static void __init bctrm3_add_device_buttons(void) {}
-#endif
 
 static struct regulator_consumer_supply bctrm3_vmmc_consumers[] = {
 	REGULATOR_SUPPLY("vmmc", "sdhci-esdhc-imx.0"),
@@ -1361,9 +1311,6 @@ static void __init mx6_bctrm3_board_init(void)
 	imx_asrc_data.asrc_audio_clk = clk_get(NULL, "asrc_serial_clk");
 	imx6q_add_asrc(&imx_asrc_data);
 
-	/* release USB Hub reset */
-	gpio_set_value(MX6Q_BCTRM3_USB_HUB_RESET, 1);
-
 	imx6q_add_mxc_pwm(0);
 	imx6q_add_mxc_pwm(1);
 	imx6q_add_mxc_pwm(2);
@@ -1377,8 +1324,6 @@ static void __init mx6_bctrm3_board_init(void)
 	imx6q_add_gpmi(&mx6_gpmi_nand_platform_data);
 
 	imx6q_add_dvfs_core(&bctrm3_dvfscore_data);
-
-	bctrm3_add_device_buttons();
 
 	imx6q_add_hdmi_soc();
 	imx6q_add_hdmi_soc_dai();
