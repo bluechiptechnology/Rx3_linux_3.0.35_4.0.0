@@ -637,28 +637,6 @@ static const struct spi_imx_master mx6q_bctrm3_spi_data __initconst = {
 	.num_chipselect = ARRAY_SIZE(mx6q_bctrm3_spi_cs),
 };
 
-#if defined(CONFIG_MTD_M25P80) || defined(CONFIG_MTD_M25P80_MODULE)
-static struct mtd_partition imx6_bctrm3_spi_nor_partitions[] = {
-	{
-	 .name = "bootloader",
-	 .offset = 0,
-	 .size = 0x00040000,
-	},
-	{
-	 .name = "kernel",
-	 .offset = MTDPART_OFS_APPEND,
-	 .size = MTDPART_SIZ_FULL,
-	},
-};
-
-static struct flash_platform_data imx6_bctrm3__spi_flash_data = {
-	.name = "m25p80",
-	.parts = imx6_bctrm3_spi_nor_partitions,
-	.nr_parts = ARRAY_SIZE(imx6_bctrm3_spi_nor_partitions),
-	.type = "sst25vf016b",
-};
-#endif
-
 /* fixed regulator for ads7846 */
 static struct regulator_consumer_supply ads7846_supply =
 	REGULATOR_SUPPLY("vcc", "spi4.0");
