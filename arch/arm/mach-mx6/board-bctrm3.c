@@ -552,11 +552,15 @@ static struct mtd_partition nand_partitions[] = {
 	{
 		.name	= "bootloader",
 		.offset	= 0,
-		.size	= 0x800000,  //8MB (64 blocks)
+		.size	= 0x00200000,  //2M (16 blocks)
+	},{
+		.name	= "Env",
+		.offset	= MTDPART_OFS_APPEND,
+		.size	= 0x00100000,  //1M (8 blocks)
 	},{
 		.name	= "splash",
 		.offset	= MTDPART_OFS_APPEND,
-		.size	= 0x980000,   //10MB - 512K (76 blocks)
+		.size	= 0xA00000,   //10MB (80 blocks)
 	},{
 		.name	= "kernel",
 		.offset	= MTDPART_OFS_APPEND,
