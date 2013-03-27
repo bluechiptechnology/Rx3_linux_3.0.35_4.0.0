@@ -476,6 +476,17 @@ static iomux_v3_cfg_t mx6q_bctrm3_csi0_sensor_pads[] = {
 	MX6Q_PAD_NANDF_CS3__GPIO_6_16,               // CAM_STROBE
 };
 
+static iomux_v3_cfg_t bctrm3_hdmi_ddc_pads[] = {
+	MX6Q_PAD_KEY_COL3__HDMI_TX_DDC_SCL, /* HDMI DDC SCL */
+	MX6Q_PAD_KEY_ROW3__HDMI_TX_DDC_SDA, /* HDMI DDC SDA */
+};
+
+static iomux_v3_cfg_t bctrm3_i2c2_pads[] = {
+	MX6Q_PAD_KEY_COL3__I2C2_SCL,	/* I2C2 SCL */
+	MX6Q_PAD_KEY_ROW3__I2C2_SDA,	/* I2C2 SDA */
+};
+
+
 #define MX6Q_USDHC_PAD_SETTING(id, speed)	\
 mx6q_sd##id##_##speed##mhz[] = {		\
 	MX6Q_PAD_SD##id##_CLK__USDHC##id##_CLK_##speed##MHZ,	\
@@ -798,6 +809,9 @@ static struct i2c_board_info mxc_i2c1_board_info[] __initdata =
 		I2C_BOARD_INFO("tlv320aic3x", 0x18),
 		.platform_data = (void *)&bctrm3_aic33_data,
 	},
+	{
+		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
+	},
 };
 
 
@@ -903,6 +917,13 @@ static struct imx_asrc_platform_data imx_asrc_data = {
 
 static struct ipuv3_fb_platform_data bctrm3_fb_data[] = {
 	{
+	.disp_dev = "ldb",
+	.interface_pix_fmt = IPU_PIX_FMT_RGB666,
+	.mode_str = "LDB-XGA",
+	.default_bpp = 16,
+	.int_clk = false,
+	},
+	{
 	.disp_dev = "lcd",
 	.interface_pix_fmt = IPU_PIX_FMT_RGB24,
 	.mode_str = "XGA",
@@ -930,14 +951,32 @@ static void hdmi_init(int ipu_id, int disp_id)
 
 	/* GPR3, bits 2-3 = HDMI_MUX_CTL */
 	mxc_iomux_set_gpr_register(3, 2, 2, hdmi_mux_setting);
+
+	/* Set HDMI event as SDMA event2 while Chip version later than TO1.2 */
+	if ((mx6q_revision() > IMX_CHIP_REVISION_1_1))
+		mxc_iomux_set_gpr_register(0, 0, 1, 1);
+}
+
+static void hdmi_enable_ddc_pin(void)
+{
+	mxc_iomux_v3_setup_multiple_pads(bctrm3_hdmi_ddc_pads,
+		ARRAY_SIZE(bctrm3_hdmi_ddc_pads));
+}
+
+static void hdmi_disable_ddc_pin(void)
+{
+	mxc_iomux_v3_setup_multiple_pads(bctrm3_i2c2_pads,
+		ARRAY_SIZE(bctrm3_i2c2_pads));
 }
 
 static struct fsl_mxc_hdmi_platform_data hdmi_data = {
 	.init = hdmi_init,
+	.enable_pins = hdmi_enable_ddc_pin,
+	.disable_pins = hdmi_disable_ddc_pin,
 };
 
 static struct fsl_mxc_hdmi_core_platform_data hdmi_core_data = {
-	.ipu_id = 0,
+	.ipu_id = 1,
 	.disp_id = 0,
 };
 
