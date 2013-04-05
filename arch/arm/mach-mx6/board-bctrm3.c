@@ -88,6 +88,7 @@
 #define MX6Q_BCTRM3_LED_CNTRL       IMX_GPIO_NR(7, 13)
 #define MX6Q_BCTRM3_CSI0_RST        IMX_GPIO_NR(6, 15)
 
+#define MX6Q_BCTRM3_AUDIO_SELECT    IMX_GPIO_NR(2, 14)
 #define MX6Q_BCTRM3_EN_LITE         IMX_GPIO_NR(1, 3)
 #define MX6Q_BCTRM3_EN_PANEL        IMX_GPIO_NR(4, 20)
 
@@ -1294,6 +1295,10 @@ static void __init mx6_bctrm3_board_init(void)
 	imx6q_add_v4l2_capture(0, &capture_data[0]);
 	imx6q_add_mipi_csi2(&mipi_csi2_pdata);
 	imx6q_add_imx_snvs_rtc();
+
+	gpio_request(MX6Q_BCTRM3_AUDIO_SELECT, "AUDIO_SELECT");
+	gpio_direction_output(MX6Q_BCTRM3_AUDIO_SELECT, 0);		// Default to RM3 codec
+	gpio_export(MX6Q_BCTRM3_AUDIO_SELECT, 0);
 
 	gpio_request(MX6Q_BCTRM3_EN_LITE, "EN_BL");
 	gpio_direction_output(MX6Q_BCTRM3_EN_LITE, 1);
