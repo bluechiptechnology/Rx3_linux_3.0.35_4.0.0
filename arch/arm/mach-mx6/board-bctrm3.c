@@ -1210,6 +1210,48 @@ static void __init bcthb2_ads7846_init(void)
 }
 
 
+void bctrm3_pcie_reset(void)
+{
+	struct i2c_adapter *adapter = i2c_get_adapter(2);
+	struct i2c_msg msg;
+	int status;
+
+	char data[] = {0x0A ,0x00};
+
+	if (!adapter)
+	{
+		printk(KERN_ERR "bctrm3_pcie_reset: Missing I2C adapter - cannot reset PCIE card\n");
+		return;
+	}
+
+	msg.addr = 0x56;
+	msg.buf = (void __force *) data;
+	msg.len = 2;
+	msg.flags = 0;
+
+	status = i2c_transfer(adapter, &msg, 1);
+
+	if(status < 0)
+	{
+		printk(KERN_ERR "bctrm3_pcie_reset: I2C transfer to PIC failed: %d\n", status);
+	}
+	else
+	{
+		// Wait for PIC to perform the reset
+		msleep(100);
+		printk(KERN_INFO "Done BCTRM3 PCIE Reset OK\n");
+	}
+}
+
+static const struct imx_pcie_platform_data bctrm3_pcie_data __initconst = {
+	.pcie_pwr_en	= -EINVAL,
+	.pcie_rst	= -EINVAL,
+	.pcie_wake_up	= -EINVAL,
+	.pcie_dis	= -EINVAL,
+	.reset_func	= bctrm3_pcie_reset,
+};
+
+
 /*!
  * Board specific initialization.
  */
@@ -1369,6 +1411,8 @@ static void __init mx6_bctrm3_board_init(void)
 	clk_set_rate(clko2, rate);
 	clk_enable(clko2);
 	imx6q_add_busfreq();
+
+	imx6q_add_pcie(&bctrm3_pcie_data);
 }
 
 extern void __iomem *twd_base;

@@ -35,5 +35,6 @@ struct imx_pcie_platform_data {
 	unsigned int pcie_rst;
 	unsigned int pcie_wake_up;
 	unsigned int pcie_dis;
+	void (*reset_func)(void);
 };
 #endif /* __ASM_ARCH_IMX_PCIE_H */

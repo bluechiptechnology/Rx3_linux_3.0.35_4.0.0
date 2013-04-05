@@ -716,6 +716,13 @@ static void card_reset(struct device *dev)
 {
 	struct imx_pcie_platform_data *pdata = dev->platform_data;
 
+	// Use alernative reset function if one has been defined
+	if (pdata->reset_func)
+	{
+		pdata->reset_func();
+		return;
+	}
+
 	/* PCIE RESET */
 	gpio_request(pdata->pcie_rst, "PCIE RESET");
 
