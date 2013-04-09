@@ -104,6 +104,7 @@
 #define MX6Q_BCTRM3_GPIO10          IMX_GPIO_NR(1, 6)
 
 #define MX6Q_BCTRM3_PER_RST         IMX_GPIO_NR(2, 8)
+#define MX6Q_BCTRM3_WIRELESS_PWR_EN IMX_GPIO_NR(1, 2)
 
 #define MX6Q_BCTRM3_SOM_IRQA_GPIO   IMX_GPIO_NR(6, 31)
 #define MX6Q_BCTRM3_SOM_IRQB_GPIO   IMX_GPIO_NR(2, 28)
@@ -713,8 +714,6 @@ static void spi_device_init(void)
 				ARRAY_SIZE(imx6_bctrm3_spi_nor_device));
 }
 
-static struct mxc_audio_platform_data mx6_bctrm3_audio_data;
-
 static struct imx_ssi_platform_data mx6_bctrm3_ssi_pdata = {
 	.flags = IMX_SSI_DMA | IMX_SSI_SYN,
 };
@@ -804,14 +803,20 @@ static struct aic3x_pdata bctrm3_aic33_data __initdata = {
 	.gpio_reset = -EINVAL,
 };
 
+// I2CA has HDMI DDC
 static struct i2c_board_info mxc_i2c1_board_info[] __initdata =
+{
+	{
+		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
+	},
+};
+
+// I2CB has SoM codec
+static struct i2c_board_info mxc_i2c2_board_info[] __initdata =
 {
 	{
 		I2C_BOARD_INFO("tlv320aic3x", 0x18),
 		.platform_data = (void *)&bctrm3_aic33_data,
-	},
-	{
-		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
 	},
 };
 
@@ -1341,6 +1346,14 @@ static void __init mx6_bctrm3_board_init(void)
 	gpio_direction_input(MX6Q_BCTRM3_GPIO8);
 	gpio_export(MX6Q_BCTRM3_GPIO8, 1);
 
+	gpio_request(MX6Q_BCTRM3_GPIO9, "RM3_GPIO9");
+	gpio_direction_output(MX6Q_BCTRM3_GPIO9, 0);
+	gpio_export(MX6Q_BCTRM3_GPIO9, 1);
+
+	gpio_request(MX6Q_BCTRM3_WIRELESS_PWR_EN, "WIRELESS_PWR_EN");
+	gpio_direction_output(MX6Q_BCTRM3_WIRELESS_PWR_EN, 0);
+	gpio_export(MX6Q_BCTRM3_WIRELESS_PWR_EN, 0);
+
 	gpio_request(MX6Q_BCTRM3_PER_RST, "PER_RST");
 	gpio_direction_output(MX6Q_BCTRM3_PER_RST, 1);
 	msleep(20);
@@ -1348,12 +1361,12 @@ static void __init mx6_bctrm3_board_init(void)
 
 	bctrm3_init_smsc911x();
 
+	i2c_register_board_info(1, mxc_i2c1_board_info, ARRAY_SIZE(mxc_i2c1_board_info));
+	i2c_register_board_info(2, mxc_i2c2_board_info, ARRAY_SIZE(mxc_i2c2_board_info));
+
 	imx6q_add_imx_i2c(0, &mx6q_bctrm3_i2c_data);
 	imx6q_add_imx_i2c(1, &mx6q_bctrm3_i2c_data);
 	imx6q_add_imx_i2c(2, &mx6q_bctrm3_i2c_data);
-
-	i2c_register_board_info(2, mxc_i2c1_board_info,
-			ARRAY_SIZE(mxc_i2c1_board_info));
 
 	/* SPI */
 	platform_device_register(&vads7846_device);
