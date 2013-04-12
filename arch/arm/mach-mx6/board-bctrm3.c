@@ -924,9 +924,9 @@ static struct imx_asrc_platform_data imx_asrc_data = {
 static struct ipuv3_fb_platform_data bctrm3_fb_data[] = {
 	{
 	.disp_dev = "ldb",
-	.interface_pix_fmt = IPU_PIX_FMT_RGB666,
+	.interface_pix_fmt = IPU_PIX_FMT_RGB24,
 	.mode_str = "LDB-XGA",
-	.default_bpp = 16,
+	.default_bpp = 32,
 	.int_clk = false,
 	},
 	{
