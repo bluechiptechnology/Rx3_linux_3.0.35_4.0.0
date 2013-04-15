@@ -551,7 +551,7 @@ static const struct esdhc_platform_data mx6q_bctrm3_sd3_data __initconst = {
 
 static const struct esdhc_platform_data mx6q_bctrm3_sd1_data __initconst = {
 	.cd_gpio = MX6Q_BCTRM3_SD1_CD,
-	.wp_gpio = MX6Q_BCTRM3_SD1_WP,
+	.wp_gpio = -EINVAL,
 	.keep_power_at_suspend = 1,
 	.platform_pad_change = plt_sd1_pad_change,
 };
