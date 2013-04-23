@@ -617,21 +617,24 @@ static inline void mx6q_bctrm3_init_uart(void)
 	imx6q_add_imx_uart(1, NULL);
 }
 
+static void phy_write_mmd(struct phy_device *phydev, u32 regnum, u16 val)
+{
+	phy_write(phydev, 0x0d, 0x0002);
+	phy_write(phydev, 0x0e, regnum);
+	phy_write(phydev, 0x0d, 0x8002);
+	phy_write(phydev, 0x0e, val);
+}
+
 static int mx6q_bctrm3_fec_phy_init(struct phy_device *phydev)
 {
 	/* prefer master mode, disable 1000 Base-T capable */
 	phy_write(phydev, 0x9, 0x1F00);
 
-	/* max rx/tx clock delay, min rx/tx control delay */
-	phy_write(phydev, 0x0d, 0x0002);
-	phy_write(phydev, 0x0e, 0x0004);
-	phy_write(phydev, 0x0d, 0x8002);
-	phy_write(phydev, 0x0e, 0x0000);
-
-	phy_write(phydev, 0x0d, 0x0002);
-	phy_write(phydev, 0x0e, 0x0008);
-	phy_write(phydev, 0x0d, 0x8002);
-	phy_write(phydev, 0x0e, 0x03FF);
+	// Use defaults for RX, max delay for TX (i.e. delay TX_CLK as much as possible, TXD as little as possible)
+	phy_write_mmd(phydev, 0x4, 0x0070);		// RX_CTL[7:4], TX_CTL[3:0]
+	phy_write_mmd(phydev, 0x5, 0x7777);		// RXDn
+	phy_write_mmd(phydev, 0x6, 0x0000);		// TXDn
+	phy_write_mmd(phydev, 0x8, 0x03EF);		// TX_CLK[9:5], RX_CLK[4:0]
 
 	return 0;
 }
