@@ -212,6 +212,14 @@ bool "Support i.MX 6 BCT RM3 platform"
 	  Include support for i.MX 6 BCT RM3 platform. This includes specific
 	  configurations for the board and its peripherals.
 
+config BCT_USE_HB_CODEC
+	bool "Use Host Board codec (rather than RM3 codec)"
+	depends on MACH_BCTRM3
+	default n
+	help
+	  By default, the RM3 codec is used for audio. This option disables
+	  the RM3 codec and allows the use of a separate codec on the Host Board.
+
 config MACH_MX6Q_SABRESD
 	bool "Support i.MX 6Quad SABRESD platform"
 	select ARCH_MX6Q

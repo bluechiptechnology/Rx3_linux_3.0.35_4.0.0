@@ -812,15 +812,23 @@ static struct i2c_board_info mxc_i2c1_board_info[] __initdata =
 	{
 		I2C_BOARD_INFO("mxc_hdmi_i2c", 0x50),
 	},
+#ifdef CONFIG_BCT_USE_HB_CODEC
+	{
+		I2C_BOARD_INFO("tlv320aic3x", 0x18),
+		.platform_data = (void *)&bctrm3_aic33_data,
+	},
+#endif
 };
 
 // I2CB has SoM codec
 static struct i2c_board_info mxc_i2c2_board_info[] __initdata =
 {
+#ifndef CONFIG_BCT_USE_HB_CODEC
 	{
 		I2C_BOARD_INFO("tlv320aic3x", 0x18),
 		.platform_data = (void *)&bctrm3_aic33_data,
 	},
+#endif
 };
 
 
@@ -1305,7 +1313,11 @@ static void __init mx6_bctrm3_board_init(void)
 	imx6q_add_imx_snvs_rtc();
 
 	gpio_request(MX6Q_BCTRM3_AUDIO_SELECT, "AUDIO_SELECT");
+#ifdef CONFIG_BCT_USE_HB_CODEC
+	gpio_direction_output(MX6Q_BCTRM3_AUDIO_SELECT, 1);		// Default to HB codec
+#else
 	gpio_direction_output(MX6Q_BCTRM3_AUDIO_SELECT, 0);		// Default to RM3 codec
+#endif
 	gpio_export(MX6Q_BCTRM3_AUDIO_SELECT, 0);
 
 	gpio_request(MX6Q_BCTRM3_EN_LITE, "EN_BL");
@@ -1350,7 +1362,11 @@ static void __init mx6_bctrm3_board_init(void)
 	gpio_export(MX6Q_BCTRM3_GPIO8, 1);
 
 	gpio_request(MX6Q_BCTRM3_GPIO9, "RM3_GPIO9");
+#ifdef CONFIG_BCT_USE_HB_CODEC
+	gpio_direction_output(MX6Q_BCTRM3_GPIO9, 1);	// Enable IIS signals to HB codec
+#else
 	gpio_direction_output(MX6Q_BCTRM3_GPIO9, 0);
+#endif
 	gpio_export(MX6Q_BCTRM3_GPIO9, 1);
 
 	gpio_request(MX6Q_BCTRM3_WIRELESS_PWR_EN, "WIRELESS_PWR_EN");

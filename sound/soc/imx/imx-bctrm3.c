@@ -128,6 +128,20 @@ static int bctre2_aic34_init(struct snd_soc_pcm_runtime *rtd)
 }
 
 /* Digital audio interface glue - connects codec <--> CPU */
+#ifdef CONFIG_BCT_USE_HB_CODEC
+static struct snd_soc_dai_link bctre2_dai[] = {
+	{
+		.name = "TLV320AIC34",
+		.stream_name = "AIC34",
+		.cpu_dai_name = "imx-ssi.1",
+		.codec_dai_name = "tlv320aic3x-hifi",
+		.platform_name = "imx-pcm-audio.1",
+		.codec_name = "tlv320aic3x-codec.1-0018",
+		.init = bctre2_aic34_init,
+		.ops = &bctre2_ops,
+	},
+};
+#else
 static struct snd_soc_dai_link bctre2_dai[] = {
 	{
 		.name = "TLV320AIC34",
@@ -140,6 +154,7 @@ static struct snd_soc_dai_link bctre2_dai[] = {
 		.ops = &bctre2_ops,
 	},
 };
+#endif
 
 /* Audio card */
 static struct snd_soc_card bctre2_sound_card = {
