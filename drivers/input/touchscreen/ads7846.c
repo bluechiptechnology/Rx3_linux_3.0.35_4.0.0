@@ -699,7 +699,7 @@ static int ads7846_get_value(struct ads7846 *ts, struct spi_message *m)
 		 * adjust:  on-wire is a must-ignore bit, a BE12 value, then
 		 * padding; built from two 8 bit values written msb-first.
 		 */
-		return be16_to_cpup((__be16 *)t->rx_buf) >> 3;
+		return (be16_to_cpup((__be16 *)t->rx_buf) >> 3) & 0x0fff;
 	}
 }
 
