@@ -94,10 +94,10 @@ static struct cpu_op mx6q_cpu_op_1G[] = {
 	 .pu_voltage = 1250000,
 	 .soc_voltage = 1250000,
 #else
-	 .pu_voltage = 1175000,
-	 .soc_voltage = 1175000,
+	 .pu_voltage = 1250000,
+	 .soc_voltage = 1250000,
 #endif
-	 .cpu_voltage = 1150000,},
+	 .cpu_voltage = 1250000,},
 #ifdef CONFIG_MX6_VPU_352M
 	/*pll2_pfd_400M will be fix on 352M,to avoid modify other code
 	which assume ARM clock sourcing from pll2_pfd_400M, change cpu
@@ -114,9 +114,9 @@ static struct cpu_op mx6q_cpu_op_1G[] = {
 	  .pll_rate = 396000000,
 	  .cpu_rate = 396000000,
 	  .cpu_podf = 0,
-	  .pu_voltage = 1175000,
-	  .soc_voltage = 1175000,
-	  .cpu_voltage = 950000,},
+	  .pu_voltage = 1250000,
+	  .soc_voltage = 1250000,
+	  .cpu_voltage = 1250000,},
 #endif
 };
 
