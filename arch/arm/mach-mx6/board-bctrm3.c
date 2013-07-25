@@ -84,7 +84,7 @@
 #define MX6Q_BCTRM3_SD1_WP          IMX_GPIO_NR(1, 9)
 #define MX6Q_BCTRM3_ECSPI1_CS1      IMX_GPIO_NR(1, 13)
 
-#define MX6Q_BCTRM3_CAN1_EN         IMX_GPIO_NR(2, 11)
+#define MX6Q_BCTRM3_CAN_3           IMX_GPIO_NR(2, 11)
 #define MX6Q_BCTRM3_LED_CNTRL       IMX_GPIO_NR(7, 13)
 #define MX6Q_BCTRM3_CSI0_RST        IMX_GPIO_NR(6, 15)
 
@@ -905,22 +905,9 @@ static struct ahci_platform_data mx6q_bctrm3_sata_data = {
 	.exit = mx6q_bctrm3_sata_exit,
 };
 
-static struct gpio mx6q_bctrm3_flexcan_gpios[] = {
-	{ MX6Q_BCTRM3_CAN1_EN, GPIOF_OUT_INIT_LOW, "flexcan1-en" },
-};
-
-static void mx6q_bctrm3_flexcan0_switch(int enable)
-{
-	if (enable) {
-		gpio_set_value(MX6Q_BCTRM3_CAN1_EN, 1);
-	} else {
-		gpio_set_value(MX6Q_BCTRM3_CAN1_EN, 0);
-	}
-}
-
 static const struct flexcan_platform_data
-	mx6q_bctrm3_flexcan0_pdata __initconst = {
-	.transceiver_switch = mx6q_bctrm3_flexcan0_switch,
+	mx6q_bctrm3_flexcan1_pdata __initconst = {
+	.transceiver_switch = NULL,
 };
 
 static struct viv_gpu_platform_data imx6q_gpu_pdata __initdata = {
@@ -1275,7 +1262,6 @@ static const struct imx_pcie_platform_data bctrm3_pcie_data __initconst = {
 static void __init mx6_bctrm3_board_init(void)
 {
 	int i;
-	int ret;
 	struct clk *clko2;
 	struct clk *new_parent;
 	int rate;
@@ -1373,6 +1359,10 @@ static void __init mx6_bctrm3_board_init(void)
 	gpio_direction_output(MX6Q_BCTRM3_WIRELESS_PWR_EN, 0);
 	gpio_export(MX6Q_BCTRM3_WIRELESS_PWR_EN, 0);
 
+	gpio_request(MX6Q_BCTRM3_CAN_3, "CAN_3");
+	gpio_direction_output(MX6Q_BCTRM3_CAN_3, 0);
+	gpio_export(MX6Q_BCTRM3_CAN_3, 1);
+
 	gpio_request(MX6Q_BCTRM3_PER_RST, "PER_RST");
 	gpio_direction_output(MX6Q_BCTRM3_PER_RST, 1);
 	msleep(20);
@@ -1428,12 +1418,7 @@ static void __init mx6_bctrm3_board_init(void)
 	imx6q_add_hdmi_soc();
 	imx6q_add_hdmi_soc_dai();
 
-	ret = gpio_request_array(mx6q_bctrm3_flexcan_gpios,
-			ARRAY_SIZE(mx6q_bctrm3_flexcan_gpios));
-	if (ret)
-		pr_err("failed to request flexcan1-gpios: %d\n", ret);
-	else
-		imx6q_add_flexcan0(&mx6q_bctrm3_flexcan0_pdata);
+	imx6q_add_flexcan1(&mx6q_bctrm3_flexcan1_pdata);
 
 	clko2 = clk_get(NULL, "clko2_clk");
 	if (IS_ERR(clko2))
