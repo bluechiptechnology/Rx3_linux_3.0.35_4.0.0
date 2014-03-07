@@ -2905,7 +2905,7 @@ static int mxc_v4l2_master_attach(struct v4l2_int_device *slave)
 	}
 
 	if (sdata->csi != cam->csi) {
-		pr_debug("%s: csi doesn't match\n", __func__);
+		pr_debug("%s: csi doesn't match (slave %d, master %d)\n", __func__, sdata->csi, cam->csi);
 		return -1;
 	}
 

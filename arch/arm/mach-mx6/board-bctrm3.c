@@ -86,7 +86,8 @@
 
 #define MX6Q_BCTRM3_CAN_3           IMX_GPIO_NR(2, 11)
 #define MX6Q_BCTRM3_LED_CNTRL       IMX_GPIO_NR(7, 13)
-#define MX6Q_BCTRM3_CSI0_RST        IMX_GPIO_NR(6, 15)
+#define MX6Q_BCTRM3_CAM_GLOBAL_RST  IMX_GPIO_NR(6, 15)
+#define MX6Q_BCTRM3_CAM_WEN         IMX_GPIO_NR(5, 20)
 
 #define MX6Q_BCTRM3_AUDIO_SELECT    IMX_GPIO_NR(2, 14)
 #define MX6Q_BCTRM3_EN_LITE         IMX_GPIO_NR(1, 3)
@@ -456,7 +457,7 @@ static iomux_v3_cfg_t mx6q_bctrm3_csi0_sensor_pads[] = {
 	MX6Q_PAD_CSI0_MCLK__IPU1_CSI0_HSYNC,
 	MX6Q_PAD_CSI0_PIXCLK__IPU1_CSI0_PIXCLK,
 	MX6Q_PAD_CSI0_VSYNC__IPU1_CSI0_VSYNC,
-	MX6Q_PAD_CSI0_DATA_EN__IPU1_CSI0_DATA_EN,
+	MX6Q_PAD_CSI0_DATA_EN__GPIO_5_20,
 	MX6Q_PAD_CSI0_DAT4__IPU1_CSI0_D_4,
 	MX6Q_PAD_CSI0_DAT5__IPU1_CSI0_D_5,
 	MX6Q_PAD_CSI0_DAT6__IPU1_CSI0_D_6,
@@ -738,16 +739,22 @@ static struct imxi2c_platform_data mx6q_bctrm3_i2c_data = {
 
 static void mx6q_csi0_io_init(void)
 {
+	printk(KERN_INFO "BCT - %s()\n", __FUNCTION__);
+	
 	mxc_iomux_v3_setup_multiple_pads(mx6q_bctrm3_csi0_sensor_pads,
 			ARRAY_SIZE(mx6q_bctrm3_csi0_sensor_pads));
 
 	/* Camera reset */
-	gpio_request(MX6Q_BCTRM3_CSI0_RST, "cam-reset");
-	gpio_direction_output(MX6Q_BCTRM3_CSI0_RST, 1);
+	gpio_request(MX6Q_BCTRM3_CAM_GLOBAL_RST, "cam-reset");
+	gpio_direction_output(MX6Q_BCTRM3_CAM_GLOBAL_RST, 0);
 
-	gpio_set_value(MX6Q_BCTRM3_CSI0_RST, 0);
+	gpio_set_value(MX6Q_BCTRM3_CAM_GLOBAL_RST, 1);
 	msleep(1);
-	gpio_set_value(MX6Q_BCTRM3_CSI0_RST, 1);
+	gpio_set_value(MX6Q_BCTRM3_CAM_GLOBAL_RST, 0);
+	
+	/* CAM_WEN */
+	gpio_request(MX6Q_BCTRM3_CAM_WEN, "cam-wen");
+	gpio_direction_output(MX6Q_BCTRM3_CAM_WEN, 1);
 
 	/* For MX6Q GPR1 bit19 and bit20 meaning:
 	 * Bit19:       0 - Enable mipi to IPU1 CSI0
@@ -802,6 +809,42 @@ static void __init imx6q_bctrm3_init_usb(void)
 //	mx6_usb_h1_init();
 }
 
+static void tvp5147_reset(void)
+{
+	gpio_set_value(MX6Q_BCTRM3_CAM_GLOBAL_RST, 1);
+	msleep(1);
+	gpio_set_value(MX6Q_BCTRM3_CAM_GLOBAL_RST, 0);
+}
+
+static void tvp5147_pwdn(int pwdn)
+{
+	if (pwdn)
+		gpio_set_value(MX6Q_BCTRM3_CAM_WEN, 0);
+	else
+		gpio_set_value(MX6Q_BCTRM3_CAM_WEN, 1);
+}
+
+static void mx6q_bctrm3_start_csi_mclk(void)
+{
+	struct clk *clk;
+	uint32_t freq = 0;
+	clk = clk_get(NULL, "csi_mclk1");
+	freq = clk_round_rate(clk, 15000000);
+	clk_set_rate(clk, freq);
+	clk_enable(clk);
+	clk_put(clk);
+}
+
+static struct fsl_mxc_tvin_platform_data tvp5147_data = {
+	.dvddio_reg = NULL,
+	.dvdd_reg = NULL,
+	.avdd_reg = NULL,
+	.pvdd_reg = NULL,
+	.pwdn = tvp5147_pwdn,
+	.reset = tvp5147_reset,
+	.io_init = mx6q_csi0_io_init,
+};
+
 static struct aic3x_pdata bctrm3_aic33_data __initdata = {
 	.gpio_reset = -EINVAL,
 };
@@ -829,6 +872,10 @@ static struct i2c_board_info mxc_i2c2_board_info[] __initdata =
 		.platform_data = (void *)&bctrm3_aic33_data,
 	},
 #endif
+	{
+		I2C_BOARD_INFO("tvp5147", 0x5C),
+		.platform_data = (void *)&tvp5147_data,
+	},
 };
 
 
@@ -1434,6 +1481,8 @@ static void __init mx6_bctrm3_board_init(void)
 	clk_enable(clko2);
 	imx6q_add_busfreq();
 
+	mx6q_bctrm3_start_csi_mclk();
+	
 	imx6q_add_pcie(&bctrm3_pcie_data);
 }
 

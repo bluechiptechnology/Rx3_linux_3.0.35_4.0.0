@@ -53,5 +53,9 @@ obj-$(CONFIG_MXC_CAMERA_OV8820_MIPI) += ov8820_camera_mipi.o
 adv7180_tvin-objs := adv7180.o
 obj-$(CONFIG_MXC_TVIN_ADV7180) += adv7180_tvin.o
 
+#Added to include TVP5147 support:
+tvp5147_tvin-objs := tvp5147.o
+obj-$(CONFIG_MXC_TVIN_TVP5147) += tvp5147_tvin.o
+
 adv7280_tvin-objs := adv7280_mipi_tvin.o
 obj-$(CONFIG_MXC_MIPI_CSI2_TVIN_ADV7280) += adv7280_mipi_tvin.o
