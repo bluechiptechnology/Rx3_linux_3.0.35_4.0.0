@@ -120,6 +120,7 @@ static int bctre2_aic34_init(struct snd_soc_pcm_runtime *rtd)
 	snd_soc_dapm_nc_pin(dapm, "HPLCOM");
 	snd_soc_dapm_nc_pin(dapm, "HPRCOM");
 	snd_soc_dapm_nc_pin(dapm, "RLOUT");
+	snd_soc_dapm_nc_pin(dapm, "LLOUT");
 	snd_soc_dapm_nc_pin(dapm, "MONO_LOUT");
 
 	snd_soc_dapm_sync(dapm);
