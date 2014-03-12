@@ -85,20 +85,16 @@ static unsigned long _ipu_pixel_clk_round_rate(struct clk *clk, unsigned long ra
 	 */
 	div = parent_rate;
 	remainder = do_div(div, rate);
+
+	pr_debug("_ipu_pixel_clk_round_rate(%d) parent %lld, div %lld, remainder %d\n", rate, parent_rate, div, remainder);
+
 	/* Round the divider value */
 	if (remainder > (rate/2))
 		div++;
+
 	if (div < 0x10)            /* Min DI disp clock divider is 1 */
 		div = 0x10;
-	if (div & ~0xFEF)
-		div &= 0xFF8;
-	else {
-		/* Round up divider if it gets us closer to desired pix clk */
-		if ((div & 0xC) == 0xC) {
-			div += 0x10;
-			div &= ~0xF;
-		}
-	}
+
 	final_rate = parent_rate;
 	do_div(final_rate, div);
 	return final_rate;
@@ -117,11 +113,8 @@ static int _ipu_pixel_clk_set_rate(struct clk *clk, unsigned long rate)
 	if (remainder > (rate/2))
 		div++;
 
-	/* Round up divider if it gets us closer to desired pix clk */
-	if ((div & 0xC) == 0xC) {
-		div += 0x10;
-		div &= ~0xF;
-	}
+	if (div < 0x10)            /* Min DI disp clock divider is 1 */
+		div = 0x10;
 
 	ipu_di_write(ipu, clk->id, (u32)div, DI_BS_CLKGEN0);
 
@@ -1189,6 +1182,20 @@ void adapt_panel_to_ipu_restricitions(struct ipu_soc *ipu, uint16_t *v_start_wid
 	}
 }
 
+
+static void dumpClockTree(struct device *pDev, struct clk *pClk)
+{
+	dev_dbg(pDev, "ClockTree - START\n");
+	
+	while (pClk != NULL)
+	{
+		dev_dbg(pDev, "ClockTree - %s (%ld)\n", pClk->name, pClk->get_rate(pClk));
+		pClk = clk_get_parent(pClk);
+	}
+
+	dev_dbg(pDev, "ClockTree - TOP\n");
+}
+
 /*!
  * This function is called to initialize a synchronous LCD panel.
  *
@@ -1253,11 +1260,15 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp, uint32_t pixel_clk,
 	v_total = height + v_sync_width + v_start_width + v_end_width;
 
 	/* Init clocking */
-	dev_dbg(ipu->dev, "pixel clk = %d\n", pixel_clk);
-
-	printk("Dave Pixel Closk: %d\n", pixel_clk);
+	dev_info(ipu->dev, "Request pixel clk %d for DI %d\n", pixel_clk, disp);
 
 	di_parent = clk_get_parent(ipu->di_clk[disp]);
+
+#ifdef DEBUG
+	dumpClockTree(ipu->dev, ipu->ipu_clk);
+	dumpClockTree(ipu->dev, ipu->di_clk[disp]);
+#endif
+
 	if (clk_get(NULL, "tve_clk") == di_parent ||
 		clk_get(NULL, "ldb_di0_clk") == di_parent ||
 		clk_get(NULL, "ldb_di1_clk") == di_parent) {
@@ -1269,6 +1280,7 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp, uint32_t pixel_clk,
 		dev_dbg(ipu->dev, "try ipu internal clk\n");
 		clk_set_parent(&ipu->pixel_clk[disp], ipu->ipu_clk);
 		rounded_pixel_clk = clk_round_rate(&ipu->pixel_clk[disp], pixel_clk);
+		dev_dbg(ipu->dev, "rounded_pixel_clk = %d\n", rounded_pixel_clk);
 		/*
 		 * we will only use 1/2 fraction for ipu clk,
 		 * so if the clk rate is not fit, try ext clk.
@@ -1287,9 +1299,11 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp, uint32_t pixel_clk,
 				else
 					rounded_pixel_clk *= 2;
 			}
+			dev_dbg(ipu->dev, "Setting di_parent to %d\n", rounded_pixel_clk);
 			clk_set_rate(di_parent, rounded_pixel_clk);
 			rounded_pixel_clk =
 				clk_round_rate(ipu->di_clk[disp], pixel_clk);
+			dev_dbg(ipu->dev, "Setting di_clk to %d\n", rounded_pixel_clk);
 			clk_set_rate(ipu->di_clk[disp], rounded_pixel_clk);
 			clk_set_parent(&ipu->pixel_clk[disp], ipu->di_clk[disp]);
 		}
