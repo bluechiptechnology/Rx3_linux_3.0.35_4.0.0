@@ -59,10 +59,10 @@ config SND_SOC_IMX_SGTL5000
 	help
 	  Say Y if you want to add support for SoC audio on an i.MX board with
 	  a sgtl5000 codec.
-
-config SND_SOC_IMX_BCTRM3
-	tristate "SoC Audio support for BCT RM3"
-	depends on I2C && (MACH_BCTRM3)
+	  
+config SND_SOC_IMX_BCTRE3RM3
+	tristate "SoC Audio support for BCT RE3 and RM3"
+	depends on I2C && (MACH_BCTRE3 || MACH_BCTRM3)
 	select SND_MXC_SOC_MX2
 	help
 	  Say Y if you want to add support for RM3 SoC audio

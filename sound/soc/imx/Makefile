@@ -33,6 +33,6 @@ obj-$(CONFIG_SND_SOC_IMX_CS42888) += snd-soc-imx-cs42888.o
 obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
 obj-$(CONFIG_SND_SOC_IMX_HDMI) += snd-soc-imx-hdmi.o
 obj-$(CONFIG_SND_SOC_IMX_SI4763) += snd-soc-imx-si4763.o
-obj-$(CONFIG_SND_SOC_IMX_BCTRM3) += imx-bctrm3.o
+obj-$(CONFIG_SND_SOC_IMX_BCTRE3RM3) += imx-bctre3rm3.o
 
 AFLAGS_hdmi_pcm.o := -march=armv7-a -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp

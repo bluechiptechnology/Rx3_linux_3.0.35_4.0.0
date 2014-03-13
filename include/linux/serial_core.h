@@ -47,6 +47,7 @@
 #define PORT_U6_16550A	19	/* ST-Ericsson U6xxx internal UART */
 #define PORT_TEGRA	20	/* NVIDIA Tegra internal UART */
 #define PORT_MAX_8250	20	/* max port ID */
+#define PORT_SC16IS7X2	21	/* SC16IS7x2 SPI UART */
 
 /*
  * ARM specific type numbers.  These are not currently guaranteed

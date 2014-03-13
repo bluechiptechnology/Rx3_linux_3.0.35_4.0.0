@@ -1616,8 +1616,8 @@ static void mxc_hdmi_edid_rebuild_modelist(struct mxc_hdmi *hdmi)
 
 static void  mxc_hdmi_default_edid_cfg(struct mxc_hdmi *hdmi)
 {
-	/* Default setting HDMI working in HDMI mode */
-	hdmi->edid_cfg.hdmi_cap = true;
+	/* Default setting HDMI working in DVI mode */
+	hdmi->edid_cfg.hdmi_cap = false; //DPR
 }
 
 static void  mxc_hdmi_default_modelist(struct mxc_hdmi *hdmi)

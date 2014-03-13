@@ -214,6 +214,61 @@ static int adv7180_write_reg(u8 reg, u8 val)
 	return 0;
 }
 
+//Source change (Currently only suitable for input 1 and 2 of 40 pin device)
+
+static ssize_t show_cam_source(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	int itemp;
+
+	itemp = adv7180_read(ADV7180_INPUT_CTL);
+	itemp &= 0x0F;
+
+	if (itemp == 0)
+	{
+		strcpy(buf, "1\n");
+	}
+	else
+	{
+		strcpy(buf, "2\n");
+	}
+
+	return strlen(buf);
+}
+
+static ssize_t store_cam_source(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+	unsigned long value;
+	int itemp;
+	int ret;
+
+	ret = strict_strtoul(buf, 10, &value);
+	if (ret)
+	{
+		return ret;
+	}
+
+	itemp = adv7180_read(ADV7180_INPUT_CTL);
+	itemp &= 0xF0;
+
+	if(value == 2)
+	{
+		itemp = itemp | 0x03;
+		adv7180_write_reg(ADV7180_INPUT_CTL, itemp);
+	}
+	else
+	{
+		itemp = itemp | 0x00;
+		adv7180_write_reg(ADV7180_INPUT_CTL, itemp);
+	}
+	
+	return count;
+
+}
+
+
+static DEVICE_ATTR(cam_source, S_IRUGO | S_IWUSR,
+			show_cam_source, store_cam_source);
+
 /***********************************************************************
  * mxc_v4l2_capture interface.
  ***********************************************************************/
@@ -1173,6 +1228,12 @@ static int adv7180_probe(struct i2c_client *client,
 	 * The pointer in priv points to the mt9v111_data structure here.*/
 	adv7180_int_device.priv = &adv7180_data;
 	ret = v4l2_int_device_register(&adv7180_int_device);
+
+	ret = device_create_file(&client->dev, &dev_attr_cam_source);
+	if (ret < 0)
+	{
+		dev_warn(&client->dev, "cam_source\n");
+	}
 
 	return ret;
 }
