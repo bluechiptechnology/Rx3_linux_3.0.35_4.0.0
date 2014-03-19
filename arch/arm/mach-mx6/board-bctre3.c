@@ -1141,37 +1141,37 @@ static void __init mx6_bctre3_board_init(void)
 
 	//request GPIO's
 	gpio_request(MX6Q_BCTRE3_GPIO1, "RE3_GPIO1");
-	gpio_export(MX6Q_BCTRE3_GPIO1, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO1, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO2, "RE3_GPIO2");
-	gpio_export(MX6Q_BCTRE3_GPIO2, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO2, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO3, "RE3_GPIO3");
-	gpio_export(MX6Q_BCTRE3_GPIO3, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO3, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO4, "RE3_GPIO4");
-	gpio_export(MX6Q_BCTRE3_GPIO4, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO4, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO5, "RE3_GPIO5");
-	gpio_export(MX6Q_BCTRE3_GPIO5, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO5, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO6, "RE3_GPIO6");
-	gpio_export(MX6Q_BCTRE3_GPIO6, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO6, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO7, "RE3_GPIO7");
-	gpio_export(MX6Q_BCTRE3_GPIO7, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO7, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO8, "RE3_GPIO8");
-	gpio_export(MX6Q_BCTRE3_GPIO8, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO8, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO9, "RE3_GPIO9");
-	gpio_export(MX6Q_BCTRE3_GPIO9, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO9, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO10, "RE3_GPIO10");
-	gpio_export(MX6Q_BCTRE3_GPIO10, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO10, 1);
 
 	gpio_request(MX6Q_BCTRE3_GPIO11, "RE3_GPIO11");
-	gpio_export(MX6Q_BCTRE3_GPIO11, 0);
+	gpio_export(MX6Q_BCTRE3_GPIO11, 1);
 
 	gpio_request(MX6Q_BCTRE3_TTYMXC2_TXEN, "TTYMXC2_TXEN");
 	gpio_direction_output(MX6Q_BCTRE3_TTYMXC2_TXEN, 0);
