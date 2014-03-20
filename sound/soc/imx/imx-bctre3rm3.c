@@ -41,13 +41,13 @@
 
 
 
-static int bctre2_startup(struct snd_pcm_substream *substream)
+static int bctre3rm3_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 	struct snd_soc_codec *codec = rtd->codec;
 
-	//dev_err(NULL, "bctre2_startup\n");
+	//dev_err(NULL, "bctre3rm3_startup\n");
 
 	snd_pcm_hw_constraint_minmax(runtime, SNDRV_PCM_HW_PARAM_CHANNELS, 2, 2);
 
@@ -63,7 +63,6 @@ static int rx51_hw_params(struct snd_pcm_substream *substream,
 	unsigned int channels = params_channels(params);
 	int err;
 
-	printk("rx51_hw_params\n");
 
 	/* Set codec DAI configuration */
 	err = snd_soc_dai_set_fmt(codec_dai,
@@ -77,15 +76,12 @@ static int rx51_hw_params(struct snd_pcm_substream *substream,
 	}
 
 
-	printk("snd_soc_dai_set_tdm_slot\n");
-
 	/* set i.MX active slot mask */
 	snd_soc_dai_set_tdm_slot(cpu_dai,
 				 channels == 1 ? 0xfffffffe : 0xfffffffc,
 				 channels == 1 ? 0xfffffffe : 0xfffffffc,
 				 2, 32);
 
-	printk("snd_soc_dai_set_fmt cpu_dai\n");
 	/* Set cpu DAI configuration */
 	err = snd_soc_dai_set_fmt(cpu_dai, SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_IF | SND_SOC_DAIFMT_CBM_CFM);
 	if (err < 0)
@@ -94,25 +90,24 @@ static int rx51_hw_params(struct snd_pcm_substream *substream,
 		return err;
 	}
 
-	printk("snd_soc_dai_set_sysclk\n");
 	/* Set the codec system clock for DAC and ADC */
 	return snd_soc_dai_set_sysclk(codec_dai, 0, 6000000,
 				      SND_SOC_CLOCK_IN);
 }
 
-static struct snd_soc_ops bctre2_ops = {
-	.startup = bctre2_startup,
+static struct snd_soc_ops bctre3rm3_ops = {
+	.startup = bctre3rm3_startup,
 	.hw_params = rx51_hw_params,
 };
 
 
-static int bctre2_aic34_init(struct snd_soc_pcm_runtime *rtd)
+static int bctre3rm3_aic34_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_codec *codec = rtd->codec;
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 	int err;
 
-	//dev_err(NULL, "bctre2_aic34_init\n");
+	//dev_err(NULL, "bctre3rm3_aic34_init\n");
 
 	/* Set up NC codec pins */
 	snd_soc_dapm_nc_pin(dapm, "LINE1L");
@@ -130,7 +125,7 @@ static int bctre2_aic34_init(struct snd_soc_pcm_runtime *rtd)
 
 /* Digital audio interface glue - connects codec <--> CPU */
 #ifdef CONFIG_BCT_USE_HB_CODEC
-static struct snd_soc_dai_link bctre2_dai[] = {
+static struct snd_soc_dai_link bctre3rm3_dai[] = {
 	{
 		.name = "TLV320AIC34",
 		.stream_name = "AIC34",
@@ -138,12 +133,12 @@ static struct snd_soc_dai_link bctre2_dai[] = {
 		.codec_dai_name = "tlv320aic3x-hifi",
 		.platform_name = "imx-pcm-audio.1",
 		.codec_name = "tlv320aic3x-codec.1-0018",
-		.init = bctre2_aic34_init,
-		.ops = &bctre2_ops,
+		.init = bctre3rm3_aic34_init,
+		.ops = &bctre3rm3_ops,
 	},
 };
 #else
-static struct snd_soc_dai_link bctre2_dai[] = {
+static struct snd_soc_dai_link bctre3rm3_dai[] = {
 	{
 		.name = "TLV320AIC34",
 		.stream_name = "AIC34",
@@ -151,20 +146,20 @@ static struct snd_soc_dai_link bctre2_dai[] = {
 		.codec_dai_name = "tlv320aic3x-hifi",
 		.platform_name = "imx-pcm-audio.1",
 		.codec_name = "tlv320aic3x-codec.2-0018",
-		.init = bctre2_aic34_init,
-		.ops = &bctre2_ops,
+		.init = bctre3rm3_aic34_init,
+		.ops = &bctre3rm3_ops,
 	},
 };
 #endif
 
 /* Audio card */
-static struct snd_soc_card bctre2_sound_card = {
-	.name = "BCTRM3-TLV320AIC",
-	.dai_link = &bctre2_dai,
-	.num_links = ARRAY_SIZE(bctre2_dai),
+static struct snd_soc_card bctre3rm3_sound_card = {
+	.name = "BCTRE3RM3-TLV320AIC",
+	.dai_link = &bctre3rm3_dai,
+	.num_links = ARRAY_SIZE(bctre3rm3_dai),
 };
 
-static struct platform_device *bctre2_snd_device;
+static struct platform_device *bctre3rm3_snd_device;
 
 static int imx_audmux_config(int slave, int master)
 {
@@ -188,47 +183,47 @@ static int imx_audmux_config(int slave, int master)
 	return 0;
 }
 
-static int __init bctre2_soc_init(void)
+static int __init bctre3rm3_soc_init(void)
 {
 	int err;
 
-	printk("bctre2_soc_init\n");
+	printk("bctre3rm3_soc_init\n");
 
 	imx_audmux_config(2 ,5);
 
-	bctre2_snd_device = platform_device_alloc("soc-audio", -1);
-	if (!bctre2_snd_device)
+	bctre3rm3_snd_device = platform_device_alloc("soc-audio", -1);
+	if (!bctre3rm3_snd_device) 
 	{
-		dev_err(NULL, "bctre2_soc_init: platform_device_alloc failed\n");
+		dev_err(NULL, "bctre3rm3_soc_init: platform_device_alloc failed\n");
 		err = -ENOMEM;
 		goto err1;
 	}
 
-	platform_set_drvdata(bctre2_snd_device, &bctre2_sound_card);
+	platform_set_drvdata(bctre3rm3_snd_device, &bctre3rm3_sound_card);
 
-	err = platform_device_add(bctre2_snd_device);
+	err = platform_device_add(bctre3rm3_snd_device);
 	if (err)
 	{
-		dev_err(NULL, "bctre2_soc_init: platform_device_add failed\n");
+		dev_err(NULL, "bctre3rm3_soc_init: platform_device_add failed\n");
 		goto err2;
 	}
 
 	return 0;
 err2:
-	platform_device_put(bctre2_snd_device);
+	platform_device_put(bctre3rm3_snd_device);
 err1:
 
 	return err;
 }
 
-static void __exit bctre2_soc_exit(void)
+static void __exit bctre3rm3_soc_exit(void)
 {
-	platform_device_unregister(bctre2_snd_device);
+	platform_device_unregister(bctre3rm3_snd_device);
 }
 
-module_init(bctre2_soc_init);
-module_exit(bctre2_soc_exit);
+module_init(bctre3rm3_soc_init);
+module_exit(bctre3rm3_soc_exit);
 
 MODULE_AUTHOR("D Robinson Blue Chip Technology");
-MODULE_DESCRIPTION("BCTRM3");
+MODULE_DESCRIPTION("BCTRE3RM3");
 MODULE_LICENSE("GPL");
