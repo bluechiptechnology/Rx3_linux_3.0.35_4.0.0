@@ -44,10 +44,6 @@
 static int bctre3rm3_startup(struct snd_pcm_substream *substream)
 {
 	struct snd_pcm_runtime *runtime = substream->runtime;
-	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct snd_soc_codec *codec = rtd->codec;
-
-	//dev_err(NULL, "bctre3rm3_startup\n");
 
 	snd_pcm_hw_constraint_minmax(runtime, SNDRV_PCM_HW_PARAM_CHANNELS, 2, 2);
 
@@ -105,9 +101,7 @@ static int bctre3rm3_aic34_init(struct snd_soc_pcm_runtime *rtd)
 {
 	struct snd_soc_codec *codec = rtd->codec;
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
-	int err;
-
-	//dev_err(NULL, "bctre3rm3_aic34_init\n");
+	int err = 0;
 
 	/* Set up NC codec pins */
 	snd_soc_dapm_nc_pin(dapm, "LINE1L");
@@ -155,7 +149,7 @@ static struct snd_soc_dai_link bctre3rm3_dai[] = {
 /* Audio card */
 static struct snd_soc_card bctre3rm3_sound_card = {
 	.name = "BCTRE3RM3-TLV320AIC",
-	.dai_link = &bctre3rm3_dai,
+	.dai_link = bctre3rm3_dai,
 	.num_links = ARRAY_SIZE(bctre3rm3_dai),
 };
 

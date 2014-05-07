@@ -771,14 +771,6 @@ static void mx6q_csi0_io_init(void)
 	mxc_iomux_set_gpr_register(1, 19, 1, 1);
 }
 
-static struct fsl_mxc_camera_platform_data camera_data = {
-	.mclk = 24000000,
-	.csi = 0,
-	.io_init = mx6q_csi0_io_init,
-};
-
-
-
 static void imx6q_bctrm3_usbotg_vbus(bool on)
 {
 	if (on)

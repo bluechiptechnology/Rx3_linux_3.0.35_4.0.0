@@ -86,7 +86,7 @@ static unsigned long _ipu_pixel_clk_round_rate(struct clk *clk, unsigned long ra
 	div = parent_rate;
 	remainder = do_div(div, rate);
 
-	pr_debug("_ipu_pixel_clk_round_rate(%d) parent %lld, div %lld, remainder %d\n", rate, parent_rate, div, remainder);
+	pr_debug("_ipu_pixel_clk_round_rate(%lud) parent %lld, div %lld, remainder %d\n", rate, parent_rate, div, remainder);
 
 	/* Round the divider value */
 	if (remainder > (rate/2))
@@ -1183,6 +1183,7 @@ void adapt_panel_to_ipu_restricitions(struct ipu_soc *ipu, uint16_t *v_start_wid
 }
 
 
+#ifdef DEBUG
 static void dumpClockTree(struct device *pDev, struct clk *pClk)
 {
 	dev_dbg(pDev, "ClockTree - START\n");
@@ -1195,6 +1196,7 @@ static void dumpClockTree(struct device *pDev, struct clk *pClk)
 
 	dev_dbg(pDev, "ClockTree - TOP\n");
 }
+#endif
 
 /*!
  * This function is called to initialize a synchronous LCD panel.
