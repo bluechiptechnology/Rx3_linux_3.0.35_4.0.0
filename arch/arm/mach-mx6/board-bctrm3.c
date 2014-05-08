@@ -82,7 +82,10 @@
 //
 #define MX6Q_BCTRM3_SD1_CD          IMX_GPIO_NR(1, 1)
 #define MX6Q_BCTRM3_SD1_WP          IMX_GPIO_NR(1, 9)
-#define MX6Q_BCTRM3_ECSPI1_CS1      IMX_GPIO_NR(1, 13)
+#define MX6Q_BCTRM3_ECSPI1_CS1      IMX_GPIO_NR(3, 19)
+#define MX6Q_BCTRM3_ECSPI5_CS1      IMX_GPIO_NR(1, 13)
+#define MX6Q_BCTRM3_ECSPI5_CS3      IMX_GPIO_NR(1, 12)
+#define MX6Q_BCTRM3_SPIEN           IMX_GPIO_NR(7,  8)
 
 #define MX6Q_BCTRM3_CAN_3           IMX_GPIO_NR(2, 11)
 #define MX6Q_BCTRM3_LED_CNTRL       IMX_GPIO_NR(7, 13)
@@ -116,6 +119,9 @@
 //
 #define MX6Q_BCTRM3_TCH_INT1        MX6Q_BCTRM3_SOM_IRQB_GPIO
 #define MX6Q_BCTRM3_USB_OTG_PWR     MX6Q_BCTRM3_GPIO10
+#define MX6Q_BCTRM3_SPI_CS_FLASH    MX6Q_BCTRM3_ECSPI1_CS1
+#define MX6Q_BCTRM3_SPI_CS_TOUCHSCR MX6Q_BCTRM3_ECSPI5_CS1
+#define MX6Q_BCTRM3_SPI_CS_ANALOGIO MX6Q_BCTRM3_ECSPI5_CS3
 
 //
 // EIM Chip Selects
@@ -285,10 +291,17 @@ static iomux_v3_cfg_t mx6q_bctrm3_pads[] = {
 	MX6Q_PAD_EIM_CS0__WEIM_WEIM_CS_0,
 	MX6Q_PAD_EIM_CS1__WEIM_WEIM_CS_1,
 	MX6Q_PAD_SD2_DAT1__WEIM_WEIM_CS_2,
+#ifdef CONFIG_MTD_M25P80
+	MX6Q_PAD_EIM_D16__ECSPI1_SCLK,
+	MX6Q_PAD_EIM_D17__ECSPI1_MISO,
+	MX6Q_PAD_EIM_D18__ECSPI1_MOSI,
+	MX6Q_PAD_EIM_D19__GPIO_3_19,
+#else
 	MX6Q_PAD_EIM_D16__WEIM_WEIM_D_16,
 	MX6Q_PAD_EIM_D17__WEIM_WEIM_D_17,
 	MX6Q_PAD_EIM_D18__WEIM_WEIM_D_18,
 	MX6Q_PAD_EIM_D19__WEIM_WEIM_D_19,
+#endif
 	MX6Q_PAD_EIM_D20__WEIM_WEIM_D_20,
 	MX6Q_PAD_EIM_D21__WEIM_WEIM_D_21,
 	MX6Q_PAD_EIM_D22__WEIM_WEIM_D_22,
@@ -393,6 +406,7 @@ static iomux_v3_cfg_t mx6q_bctrm3_pads[] = {
 	MX6Q_PAD_GPIO_2__GPIO_1_2,                   // WIRELESS_PWR_EN
 	MX6Q_PAD_GPIO_18__GPIO_7_13,                 // LED_CNTRL
 	MX6Q_PAD_SD4_DAT0__GPIO_2_8,                 // PER_RST
+	MX6Q_PAD_SD3_RST__GPIO_7_8,                  // SPIEN#
 
 	// NAND
 	MX6Q_PAD_NANDF_CS0__RAWNAND_CE0N,
@@ -645,14 +659,25 @@ static struct fec_platform_data fec_data __initdata = {
 	.phy = PHY_INTERFACE_MODE_RGMII,
 };
 
-static int mx6q_bctrm3_spi_cs[] = {
-	MX6Q_BCTRM3_ECSPI1_CS1,
+static int mx6q_bctrm3_ecspi5_cs[] = {
+	MX6Q_BCTRM3_SPI_CS_TOUCHSCR,
 };
 
-static const struct spi_imx_master mx6q_bctrm3_spi_data __initconst = {
-	.chipselect     = mx6q_bctrm3_spi_cs,
-	.num_chipselect = ARRAY_SIZE(mx6q_bctrm3_spi_cs),
+static const struct spi_imx_master mx6q_bctrm3_ecspi5_data __initconst = {
+	.chipselect     = mx6q_bctrm3_ecspi5_cs,
+	.num_chipselect = ARRAY_SIZE(mx6q_bctrm3_ecspi5_cs),
 };
+
+#ifdef CONFIG_MTD_M25P80
+static int mx6q_bctrm3_ecspi1_cs[] = {
+	MX6Q_BCTRM3_SPI_CS_FLASH,
+};
+
+static const struct spi_imx_master mx6q_bctrm3_ecspi1_data __initconst = {
+	.chipselect     = mx6q_bctrm3_ecspi1_cs,
+	.num_chipselect = ARRAY_SIZE(mx6q_bctrm3_ecspi1_cs),
+};
+#endif
 
 /* fixed regulator for ads7846 */
 static struct regulator_consumer_supply ads7846_supply =
@@ -701,7 +726,29 @@ static struct ads7846_platform_data ads7846_data = {
 	.gpio_pendown = MX6Q_BCTRM3_TCH_INT1,
 };
 
-static struct spi_board_info imx6_bctrm3_spi_nor_device[] __initdata = {
+#if defined(CONFIG_MTD_M25P80)
+static struct mtd_partition imx6_bctrm3_spi_nor_partitions[] = {
+	{
+	 .name = "bootloader",
+	 .offset = 0,
+	 .size = 0x00C0000,		// 768KBytes
+	},
+	{
+	 .name = "bootenv",
+	 .offset = MTDPART_OFS_APPEND,
+	 .size = MTDPART_SIZ_FULL,
+	},
+};
+
+static struct flash_platform_data imx6_bctrm3_spi_flash_data = {
+	.name = "m25p80",
+	.parts = imx6_bctrm3_spi_nor_partitions,
+	.nr_parts = ARRAY_SIZE(imx6_bctrm3_spi_nor_partitions),
+	.type = "sst25vf080b",
+};
+#endif
+
+static struct spi_board_info imx6_bctrm3_spi_devices[] __initdata = {
 	{
 		.modalias               = "ads7846",
 		.platform_data          = &ads7846_data,
@@ -710,12 +757,38 @@ static struct spi_board_info imx6_bctrm3_spi_nor_device[] __initdata = {
 		.chip_select            = 0,
 		.max_speed_hz           = 187500,
 	},
+#ifdef CONFIG_MTD_M25P80
+	{
+		.modalias               = "m25p80",
+		.max_speed_hz           = 20000000,
+		.bus_num                = 0,
+		.chip_select            = 0,  	// This is an index into mx6q_bctrm3_ecspi1_cs[], NOT a hw CS number
+		.platform_data          = &imx6_bctrm3_spi_flash_data,
+	},
+#endif
 };
 
 static void spi_device_init(void)
 {
-	spi_register_board_info(imx6_bctrm3_spi_nor_device,
-				ARRAY_SIZE(imx6_bctrm3_spi_nor_device));
+	spi_register_board_info(imx6_bctrm3_spi_devices,
+				ARRAY_SIZE(imx6_bctrm3_spi_devices));
+}
+
+static void spi_flash_enable(bool enable)
+{
+	if (gpio_request(MX6Q_BCTRM3_SPIEN, "SPIEN#") == 0)
+	{
+		// Drive output low to enable Flash
+		gpio_direction_output(MX6Q_BCTRM3_SPIEN, (enable) ? 0 : 1);
+	
+		// SYSFS can't change direction
+		gpio_export(MX6Q_BCTRM3_SPIEN, 0);
+	}
+	else
+	{
+		pr_err("could not obtain GPIO for SPIEN#\n");
+		return;
+	}
 }
 
 static struct imx_ssi_platform_data mx6_bctrm3_ssi_pdata = {
@@ -1418,7 +1491,13 @@ static void __init mx6_bctrm3_board_init(void)
 
 	/* SPI */
 	platform_device_register(&vads7846_device);
-	imx6q_add_ecspi(4, &mx6q_bctrm3_spi_data);
+	imx6q_add_ecspi(4, &mx6q_bctrm3_ecspi5_data);
+#ifdef CONFIG_MTD_M25P80
+	imx6q_add_ecspi(0, &mx6q_bctrm3_ecspi1_data);
+	spi_flash_enable(true);
+#else
+	spi_flash_enable(false);
+#endif
 	bcthb2_ads7846_init();
 	spi_device_init();
 

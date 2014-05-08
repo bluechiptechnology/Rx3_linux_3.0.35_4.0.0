@@ -81,8 +81,9 @@
 #define MX6Q_BCTRE3_SD1_WP		IMX_GPIO_NR(1, 9)
 #define MX6Q_BCTRE3_SD3_CD		IMX_GPIO_NR(1, 2)
 
-#define MX6Q_BCTRE3_ECSPI1_CS1	IMX_GPIO_NR(1, 13)
-#define MX6Q_BCTRE3_ECSPI1_CS2	IMX_GPIO_NR(1, 12)
+#define MX6Q_BCTRE3_ECSPI1_CS1      IMX_GPIO_NR(3, 19)
+#define MX6Q_BCTRE3_ECSPI5_CS1      IMX_GPIO_NR(1, 13)
+#define MX6Q_BCTRE3_ECSPI5_CS3      IMX_GPIO_NR(1, 12)
 #define MX6Q_BCTRE3_TTYMXC2_TXEN	IMX_GPIO_NR(2, 13)
 
 #define MX6Q_BCTRE3_PCIE_DIS	IMX_GPIO_NR(1, 2)
@@ -115,6 +116,13 @@
 #define MX6Q_BCTRE3_CAM_PWR			IMX_GPIO_NR(5, 20)
 #define MX6Q_BCTRE3_CAM_RST			IMX_GPIO_NR(7, 7)
 
+//
+// GPIO mappings
+//
+#define MX6Q_BCTRE3_SPI_CS_FLASH    MX6Q_BCTRE3_ECSPI1_CS1
+#define MX6Q_BCTRE3_SPI_CS_TOUCHSCR MX6Q_BCTRE3_ECSPI5_CS1
+#define MX6Q_BCTRE3_SPI_CS_UART     MX6Q_BCTRE3_ECSPI5_CS3
+
 #define MX6Q_BCTRE3_SD3_WP_PADCFG	(PAD_CTL_PKE | PAD_CTL_PUE |	\
 		PAD_CTL_PUS_22K_UP | PAD_CTL_SPEED_MED |	\
 		PAD_CTL_DSE_40ohm | PAD_CTL_HYS)
@@ -139,6 +147,11 @@ static iomux_v3_cfg_t mx6q_bctre3_pads[] = {
 	MX6Q_PAD_GPIO_2__GPIO_1_2,		/* PCIE DIS# */
 	MX6Q_PAD_NANDF_CS2__GPIO_6_15,   /* PCI rst */
 
+	/* SPI 1 */
+	MX6Q_PAD_EIM_D16__ECSPI1_SCLK,
+	MX6Q_PAD_EIM_D17__ECSPI1_MISO,
+	MX6Q_PAD_EIM_D18__ECSPI1_MOSI,
+	MX6Q_PAD_EIM_D19__GPIO_3_19,
 
 	/* CCM  */
 	MX6Q_PAD_GPIO_0__CCM_CLKO,		/* SGTL500 sys_mclk */
@@ -477,15 +490,26 @@ static struct fec_platform_data fec_data __initdata = {
 	.phy = PHY_INTERFACE_MODE_RGMII,
 };
 
-static int mx6q_bctre3_spi_cs[] = {
-	MX6Q_BCTRE3_ECSPI1_CS1,
-	MX6Q_BCTRE3_ECSPI1_CS2,
+static int mx6q_bctre3_ecspi5_cs[] = {
+	MX6Q_BCTRE3_SPI_CS_TOUCHSCR,
+	MX6Q_BCTRE3_SPI_CS_UART,
 };
 
-static const struct spi_imx_master mx6q_bctre3_spi_data __initconst = {
-	.chipselect     = mx6q_bctre3_spi_cs,
-	.num_chipselect = ARRAY_SIZE(mx6q_bctre3_spi_cs),
+static const struct spi_imx_master mx6q_bctre3_ecspi5_data __initconst = {
+	.chipselect     = mx6q_bctre3_ecspi5_cs,
+	.num_chipselect = ARRAY_SIZE(mx6q_bctre3_ecspi5_cs),
 };
+
+#ifdef CONFIG_MTD_M25P80
+static int mx6q_bctre3_ecspi1_cs[] = {
+	MX6Q_BCTRE3_SPI_CS_FLASH,
+};
+
+static const struct spi_imx_master mx6q_bctre3_ecspi1_data __initconst = {
+	.chipselect     = mx6q_bctre3_ecspi1_cs,
+	.num_chipselect = ARRAY_SIZE(mx6q_bctre3_ecspi1_cs),
+};
+#endif
 
 /* fixed regulator for ads7846 */
 static struct regulator_consumer_supply ads7846_supply =
@@ -557,7 +581,29 @@ static struct ads7846_platform_data ads7846_data = {
 	.gpio_pendown = MX6Q_BCTRE3_TCH_INT1,
 };
 
-static struct spi_board_info imx6_bctre3_spi_nor_device[] __initdata = {
+#if defined(CONFIG_MTD_M25P80)
+static struct mtd_partition imx6_bctre3_spi_nor_partitions[] = {
+	{
+	 .name = "bootloader",
+	 .offset = 0,
+	 .size = 0x00C0000,		// 768KBytes
+	},
+	{
+	 .name = "bootenv",
+	 .offset = MTDPART_OFS_APPEND,
+	 .size = MTDPART_SIZ_FULL,
+	},
+};
+
+static struct flash_platform_data imx6_bctre3_spi_flash_data = {
+	.name = "m25p80",
+	.parts = imx6_bctre3_spi_nor_partitions,
+	.nr_parts = ARRAY_SIZE(imx6_bctre3_spi_nor_partitions),
+	.type = "sst25vf080b",
+};
+#endif
+
+static struct spi_board_info imx6_bctre3_spi_devices[] __initdata = {
 	{
 		.modalias               = "ads7846",
 		.platform_data          = &ads7846_data,
@@ -574,13 +620,22 @@ static struct spi_board_info imx6_bctre3_spi_nor_device[] __initdata = {
 		.chip_select            = 1,
 		.max_speed_hz           = 187500,							  
 		.mode                   = SPI_MODE_0,
-	}
+	},
+#ifdef CONFIG_MTD_M25P80
+	{
+		.modalias               = "m25p80",
+		.max_speed_hz           = 20000000,
+		.bus_num                = 0,
+		.chip_select            = 0,  	// This is an index into mx6q_bctre3_ecspi1_cs[], NOT a hw CS number
+		.platform_data          = &imx6_bctre3_spi_flash_data,
+	},
+#endif
 };
 
 static void spi_device_init(void)
 {
-	spi_register_board_info(imx6_bctre3_spi_nor_device,
-				ARRAY_SIZE(imx6_bctre3_spi_nor_device));
+	spi_register_board_info(imx6_bctre3_spi_devices,
+				ARRAY_SIZE(imx6_bctre3_spi_devices));
 }
 
 static struct mxc_audio_platform_data mx6_bctre3_audio_data;
@@ -1193,7 +1248,10 @@ static void __init mx6_bctre3_board_init(void)
 
 	/* SPI */
 	platform_device_register(&vads7846_device);
-	imx6q_add_ecspi(4, &mx6q_bctre3_spi_data);
+	imx6q_add_ecspi(4, &mx6q_bctre3_ecspi5_data);
+#ifdef CONFIG_MTD_M25P80
+	imx6q_add_ecspi(0, &mx6q_bctre3_ecspi1_data);
+#endif
 	bcthb2_ads7846_init();
 	spi_device_init();
 
