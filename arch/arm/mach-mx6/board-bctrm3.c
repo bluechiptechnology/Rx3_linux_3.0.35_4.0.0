@@ -806,7 +806,7 @@ static struct platform_device mx6_bctrm3_audio_device = {
 };
 
 static struct imxi2c_platform_data mx6q_bctrm3_i2c_data = {
-	.bitrate = 400000,
+	.bitrate = 375000,	// See erratum ERR007805
 };
 
 
