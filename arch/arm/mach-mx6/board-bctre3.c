@@ -754,7 +754,11 @@ static struct i2c_board_info mxc_i2c2_board_info[] __initdata =
 	{
 		I2C_BOARD_INFO("adv7180", 0x20),
 		.platform_data = (void *)&adv7180_data,
-	}
+    },
+    {
+        I2C_BOARD_INFO("rtc-ds1307", 0x68),
+        .type   = "ds1339",
+    },
 };
 
 static struct i2c_board_info mxc_i2c1_board_info[] __initdata = 
