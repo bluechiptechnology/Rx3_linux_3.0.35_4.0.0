@@ -17,6 +17,7 @@ obj-$(CONFIG_MACH_MX6Q_SABREAUTO) += board-mx6q_sabreauto.o mx6q_sabreauto_pmic_
 obj-$(CONFIG_MACH_MX6Q_HDMIDONGLE) += board-mx6q_hdmidongle.o
 obj-$(CONFIG_MACH_BCTRE3) += board-bctre3.o
 obj-$(CONFIG_MACH_BCTRM3) += board-bctrm3.o
+obj-$(CONFIG_MACH_BCTRM3S) += board-bctrm3s.o
 obj-$(CONFIG_SMP) += plat_hotplug.o platsmp.o headsmp.o
 obj-$(CONFIG_LOCAL_TIMERS) += localtimer.o
 obj-$(CONFIG_IMX_PCIE) += pcie.o
