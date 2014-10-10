@@ -73,7 +73,7 @@ static struct fb_videomode lcdif_modedb[] = {
 	},
 	{
 	/* 800x480 @ 60 Hz , pixel clk @ 33.26MHz */
-	"URT8173", 60, 800, 480, 30066, 122, 122, 12, 12, 12, 21,
+	"URT8173", 60, 800, 480, 30066, 100, 100, 2, 2, 12, 20,
 	FB_SYNC_CLK_LAT_FALL ,
 	FB_VMODE_NONINTERLACED,
 	0,
