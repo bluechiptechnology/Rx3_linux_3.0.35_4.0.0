@@ -1392,6 +1392,12 @@ static void __init mx6_bctrm3_board_init(void)
 
 	gp_reg_id = bctrm3_dvfscore_data.reg_id;
 	mx6q_bctrm3_init_uart();
+
+	gpio_request(MX6Q_BCTRM3_EN_PANEL, "EN_PANEL");
+	gpio_direction_output(MX6Q_BCTRM3_EN_PANEL, 1);
+	gpio_export(MX6Q_BCTRM3_EN_PANEL, 0);
+	msleep(50);
+
 	imx6q_add_mxc_hdmi_core(&hdmi_core_data);
 
 	imx6q_add_ipuv3(0, &ipu_data[0]);
@@ -1421,10 +1427,6 @@ static void __init mx6_bctrm3_board_init(void)
 	gpio_request(MX6Q_BCTRM3_EN_LITE, "EN_BL");
 	gpio_direction_output(MX6Q_BCTRM3_EN_LITE, 1);
 	gpio_export(MX6Q_BCTRM3_EN_LITE, 0);
-
-	gpio_request(MX6Q_BCTRM3_EN_PANEL, "EN_PANEL");
-	gpio_direction_output(MX6Q_BCTRM3_EN_PANEL, 1);
-	gpio_export(MX6Q_BCTRM3_EN_PANEL, 0);
 
 	//request GPIO's - default to 4 in + 4 out, but can be altered by user
 	gpio_request(MX6Q_BCTRM3_GPIO1, "RM3_GPIO1");
