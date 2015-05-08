@@ -865,7 +865,7 @@ static struct ipuv3_fb_platform_data bctre3_fb_data[] = {
 	.disp_dev = "lcd",
 	.interface_pix_fmt = IPU_PIX_FMT_RGB24,
 	.mode_str = "CLAA-WVGA",
-	.default_bpp = 32,
+	.default_bpp = 16,
 	.int_clk = false,
 	}
 };
